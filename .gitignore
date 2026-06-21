@@ -1,0 +1,10 @@
+_*
+*.aps
+*.ncb
+*.suo
+*.sdf
+*.opensdf
+*.user
+VS*/x64
+VS*/Win32
+VS*/.vs
