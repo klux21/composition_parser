@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="140" viewBox="0 0 420 140">
+  <rect width="420" height="140" rx="16" ry="16" fill="#5f5fFF"/>
+  <text x="210" y="50" text-anchor="middle" font-family="monospace" font-size="45" fill="#FFFF7F">Data Composition</text>J
+  <text x="110" y="127" text-anchor="middle" font-family="monospace" font-size="60" fill="#FFFFFF">*</text>
+  <text x="150" y="114" text-anchor="middle" font-family="monospace" font-size="60" fill="#FFFFFF">=</text>
+  <text x="202" y="114" text-anchor="end" font-family="monospace" font-size="60" fill="#FFFF3f">{</text>
+  <text x="230" y="122" text-anchor="middle" font-family="monospace" font-size="90" fill="#FFFFFF">∞</text>
+  <text x="258" y="114" text-anchor="start" font-family="monospace" font-size="60" fill="#FFFF3f">}</text>
+</svg>
