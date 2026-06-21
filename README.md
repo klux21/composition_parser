@@ -2,7 +2,7 @@
   <img src="composition.svg" width="300">
 </p>
 
-<h2>A C parser for the tiny, mighty, user friendly, hierarchical data composition format</h2>
+<h2>The first C parser for the tiny, mighty and user friendly data composition format</h2>
 
 
 This C project is the first implementation of a data composition format parser for parsing
@@ -12,10 +12,11 @@ of that format can be found at
 
 https://github.com/klux21/composition
 
-However, this implementation provides a parser for composition format data and files in C
-and as a trivial configuration file parser a very different thing than that format itself.
+However, this implementation provides a parser for composition format data and files of that
+format in C but is a different thing than format itself in C.
+It also doesn't provide any DOM structure of that and doesn't provide editing capabilites.
 
-Structured compositions have a very minimal syntax; a document consists of three
+Structured data compositions have a very minimal syntax; a document consists of three
 types of elements:
 
   - Entries which consists of a name string that can be followed by an equality sign
@@ -112,4 +113,3 @@ documents. The most common file extensions for composition documents are
 The little test project here contains samples.
 The C parser itself consists of the C header iniparse.h and the C file inparse.c which have no
 dependencies to other libraries and are easy to integrate in all kind of C or C++ projects.
-
