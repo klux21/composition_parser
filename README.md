@@ -102,13 +102,7 @@ the tests are using the free open source
  project https://github.com/klux21/str2num
 
 because it' a bad idea to treat numbers with a leading `0` in configuration files as octal values
-or don't support hexadecimal, octal or binary number at all because of this.
-
-One of the greatest advantages of composition documents is their very lenient syntax.
-The format does not have many special elements. A simple list of whitespace or
-line feed separated numbers or words and many existing INI files are already valid composition
-documents. The most common file extensions for composition documents are
-.ini or .cfg and rarely .cof that indicates a composition file.
+or don't support hexadecimal, octal or binary numbers at all because of that.
 
 The little test project here contains samples.
 The C parser itself consists of the C header iniparse.h and the C file inparse.c which have no
