@@ -2,7 +2,7 @@
   <img src="composition.svg" width="300">
 </p>
 
-<h2>The first C parser for the tiny, mighty and user friendly data composition format</h2>
+<h2>The first C parser for the tiny but mighty and user friendly data composition format</h2>
 
 
 This C project is the first implementation of a data composition format parser for parsing
@@ -96,14 +96,30 @@ That doesn't match XML, JSON, INI or TOML but a very lightweight, powerful and w
 configuration format. However, in case of more complex configurations sections may help to
 improve the readability.
 
-For dealing with floation points and the binary and octal prefixes 0b and 0o of integers
-the tests are using the free open source
+For a platform independent parsing of numbers and ensuring the support the octal prefixes 0b and 0o
+for integers and floats the tests are using the free open source project
 
  project https://github.com/klux21/str2num
 
-because it' a bad idea to treat numbers with a leading `0` in configuration files as octal values
-or don't support hexadecimal, octal or binary numbers at all because of that.
+It's a bad idea to treat numbers with a leading `0` in configuration files as octal values
+or don't support hexadecimal, octal or binary numbers at all to prevent that.
 
-The little test project here contains samples.
-The C parser itself consists of the C header iniparse.h and the C file inparse.c which have no
-dependencies to other libraries and are easy to integrate in all kind of C or C++ projects.
+For the usage of platform independ fprintf format strings the following project is used
+
+ project https://github.com/klux21/callback_printf
+
+str2num and cllback_printf are expected in parallel directories.
+
+The little test project `composition_test.c` contains several usage samples.
+`composition_test.c` executable in the console of Unix operating systems for running the tests.
+For Microsoft Visual C++ exist a Visual Studio project in the VS2010 directory.
+
+The file test iterates the content of the file `composition_test.ini` only and prints the found
+elements and their types to stdout. It's easy to play with the content of that file to find out
+what's recognized or causes unexpected errors.
+
+The parser itself consists of the C header `iniparse.h` and the C file `iniparse.c` only.
+Those have no dependencies to other libraries and are easy to integrate in all kind of C or C++
+projects for a platform independend reading the configuration files.
+'iniparse' because the composition format was initial intended as an extention of the
+INI file format only. Today it's a lot more than just that of course.
