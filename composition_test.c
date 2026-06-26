@@ -96,6 +96,7 @@ exit $?
 #endif
 
 #else
+#include <time.h>
 #include <sys/time.h>
 #endif
 #include <inttypes.h>
