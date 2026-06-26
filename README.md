@@ -2,11 +2,11 @@
   <img src="composition.svg" width="300">
 </p>
 
-<h2>The first C parser for the tiny but mighty and user friendly data composition format</h2>
+<h2>The first C parser for the tiny but mighty and user-friendly data composition format</h2>
 
 
 This C project is the first implementation of a data composition format parser for parsing
-standard conform configurations and communication data.
+standard-conforming configurations and communication data.
 The format itself isn't limited to C or this implementation of course. The standard draft
 of the format specification can be found at
 
@@ -14,7 +14,7 @@ https://github.com/klux21/composition
 
 However, this implementation provides a parser for the composition format data and
 configuration files that are using that format in C. Of course this implementation is a different
-thing than format itself. It also doesn't provide a DOM structure nor any editing capabilites
+thing than format itself. It also doesn't provide a DOM structure nor any editing capabilities
 for configuration files.
 
 Structured data compositions have a very minimal syntax; a document consists of three
@@ -73,7 +73,7 @@ Equals signs `=` before curly braces aren't really required for the syntax and o
 The support of sections within compositions ensures compatibility with most existing INI
 files but it's also fine to omit sections completely.
 
-That why the configuration file could be more trivial:
+That's why the configuration file could be more trivial:
 
 ```
 server {
@@ -111,7 +111,7 @@ For the usage of platform independ fprintf format strings the following project 
 
 str2num and callback_printf are expected in parallel directories.
 
-The little test project `composition_test.c`contains several usage samples.
+The little test project `composition_test.c` contains several usage samples.
 The code of the parser has a rather early experimental state but works like a charm.
 However, it may change quite a bit in future if the requirements and features grow.
 
@@ -125,6 +125,6 @@ configuration file to find out what's recognized or causes unexpected errors.
 
 The parser itself consists of the C header `iniparse.h` and the C file `iniparse.c` only.
 Those have no dependencies to other libraries and are easy to integrate in all kind of C or C++
-projects for a platform independend reading of configuration files.
-'iniparse' because the composition format was initial intended as an extention of the
+projects for a platform-independent reading of configuration files.
+'iniparse' because the composition format was initially intended as an extention of the
 INI file format only but it's a lot more than just that of course.
