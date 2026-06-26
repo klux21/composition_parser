@@ -23,7 +23,7 @@ exit $?
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
-* Civil Usage Public License, Version 1.1, January 2024                       *
+* Civil Usage Public License, Version 1.2, June 2026                          *
 *                                                                             *
 * Redistribution and use in source and binary forms, with or without          *
 * modification, are permitted provided that the following conditions are met: *
