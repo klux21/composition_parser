@@ -472,7 +472,7 @@ int run_string_copy_tests()
       {
          found(top_entries, 2);
          sfprintf(stdout, "%4d: string_copy: found '%.*s = %.*s'\n", __LINE__,
-                  (int)  pEntry->NameSize, pEntry->pName, (int) pEntry2->ArgSize, pEntry->pArg);
+                  (int)  pEntry->NameSize, pEntry->pName, (int) pEntry->ArgSize, pEntry->pArg);
 
          if (pEntry->ArgSize != 61)
          {
