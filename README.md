@@ -126,5 +126,5 @@ configuration file to find out what's recognized or causes unexpected errors.
 The parser itself consists of the C header `iniparse.h` and the C file `iniparse.c` only.
 Those have no dependencies to other libraries and are easy to integrate in all kind of C or C++
 projects for a platform-independent reading of configuration files.
-'iniparse' because the composition format was initially intended as a small extention of the already
-used INI format only but it's a little bit more than that of course.
+'iniparse' because the data composition format was initially intended as a small enhancement of an
+already existing INI file parser but it seems a little bit more than that now.
