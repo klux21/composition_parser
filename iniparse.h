@@ -4,8 +4,8 @@
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
-*  DESCRIPTION :  Contains diverse inifile character buffer parsing functions *
-*                 for a buffer in composition format.                         *
+*  DESCRIPTION : Contains diverse character buffer parsing functions          *
+*                for a buffer that uses the data composition format.          *
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
@@ -13,7 +13,7 @@
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
-*  ORIGIN :      https://github/klux21/composition_parser                     *
+*  ORIGIN :      https://github.com/klux21/composition_parser                 *
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 /* ------------------------------------------------------------------------- *\
-   The struct INI_ENTRY holds the data of an inifile entry
+   The struct INI_ENTRY holds the data of an INI file entry
 \* ------------------------------------------------------------------------- */
 
 typedef struct INI_ENTRY_S INI_ENTRY;
@@ -66,42 +66,42 @@ struct INI_ENTRY_S
 };
 
 /* ------------------------------------------------------------------------- *\
-   pIniFileRead reads the content of an inifile into an allocated buffer.
+   pIniFileRead reads the content of an INI file into an allocated buffer.
    The returned buffer is terminated by a '\0' character and must be released
    using free() after usage.
 \* ------------------------------------------------------------------------- */
 char * pIniFileRead(const char * IniFileName);
 
 /* ------------------------------------------------------------------------- *\
-   pIniFindSection searches a section in an inifile buffer. It returns a
+   pIniFindSection searches a section in an INI file buffer. It returns a
    pointer to the begin of the sections content or nonzero if the section
    doesn't exist.
 \* ------------------------------------------------------------------------- */
-char * pIniFindSection(const char * pData,  /* pointer to an inifile data buffer to read */
-                       const char * pName); /* inifile section name */
+char * pIniFindSection(const char * pData,  /* pointer to an INI file data buffer to read */
+                       const char * pName); /* INI file section name */
 
 /* ------------------------------------------------------------------------- *\
-  pIniFindNextSection searches the next section in a given inifile buffer
+  pIniFindNextSection searches the next section in a given INI file buffer
   It returns a pointer to the begin of the sections data or NULL if there
   doesn't exist any next section within the data.
 \* ------------------------------------------------------------------------- */
-char * pIniFindNextSection(const char * pData,             /* inifile data buffer to scan */
+char * pIniFindNextSection(const char * pData,             /* INI file data buffer to scan */
                            char **      ppSectionName,     /* in success case: section name */
                            size_t *     pSectionNameSize); /* length of the section name */
 
 /* ------------------------------------------------------------------------- *\
-   bIniEntryRead reads the next entry within an inifile section and returns
+   bIniEntryRead reads the next entry within an INI file section and returns
    in success case an pointer to an allocated PINI_ENTRY structure
    containing the data of an found entry. It fails, if no entry can be found
    before begin of the next section or if a terminating '\0' character was
    found or if the allocation of the returned data buffer has failed.
    If bUnescape is nonzero then the name and the arguments are converted
    from a C like escape sequence format to binary format.
-   ppData becomes set to the data following the entry within the inifile.
+   ppData becomes set to the data following the entry within the INI file.
    The returned pointer must be released using free() after usage.
 \* ------------------------------------------------------------------------- */
 
-int bIniEntryRead(char **      ppData,     /* pointer to inifile data */
+int bIniEntryRead(char **      ppData,     /* pointer to INI file data */
                   INI_ENTRY ** ppEntry,    /* storage for the allocated pointer */
                   int          bUnescape); /* whether or not replace C-style format escape sequences */
 
@@ -122,7 +122,7 @@ int bIniEntryFind(char **  ppData,    /* section data pointer */
 
 /* ------------------------------------------------------------------------- *\
    lIniGetStringValue converts an unterminated C style escaped string from
-   inifile buffer to it's related value. DstLen has to be at maximum as large
+   INI file buffer to it's related value. DstLen has to be at maximum as large
    as SrcLen + 1 for a terminating '\0' character. The function returns the
    number of written bytes. Source and Destination buffer may overlap.
    If the destination is NULL then the required buffer size is returned only.
@@ -133,7 +133,7 @@ size_t lIniGetStringValue(char *       pDst,    /* pointer to destination buffer
                           size_t       SrcLen); /* length of the source buffer */
 
 /* ------------------------------------------------------------------------- *\
-   lIniRemoveQuotes removes the quotes from a value read from inifile without
+   lIniRemoveQuotes removes the quotes from a value read from INI file without
    replacing C-like escaped characters. The destination buffer length has to
    be at least as large as SrcLen + 1 (for a terminating '\0' character).
    The function returns the  number of bytes written to the destination string

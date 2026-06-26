@@ -4,8 +4,8 @@
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
-*  DESCRIPTION : Contains diverse inifile character buffer parsing functions  *
-*                for a buffer in composition format.                          *
+*  DESCRIPTION : Contains diverse character buffer parsing functions          *
+*                for a buffer that uses the data composition format.          *
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
@@ -581,12 +581,12 @@ Exit:;
 
 
 /* ------------------------------------------------------------------------- *\
-  pIniFindNextSection searches the next section in given inifile buffer.
+  pIniFindNextSection searches the next section in given INI file buffer.
   It returns a pointer to the begin of the sections data or NULL if there
   doesn't exist any section within the data.
 \* ------------------------------------------------------------------------- */
 
-char * pIniFindNextSection(const char * pData,             /* inifile data buffer */
+char * pIniFindNextSection(const char * pData,             /* INI file data buffer */
                            char **      ppSectionName,     /* pointer to section name */
                            size_t *     pSectionNameSize)  /* pointer to section name length */
 {
@@ -601,7 +601,7 @@ char * pIniFindNextSection(const char * pData,             /* inifile data buffe
       goto Exit;
 
    while(bIniEntryFind(&pd, NULL, NULL, NULL, NULL))
-   { /* skip all inifile entries */
+   { /* skip all INI file entries */
    }
 
    if(*pd == '[')
@@ -664,7 +664,7 @@ Exit:;
   to the begin of the sections data or NULL is the section doesn't exist.
 \* ------------------------------------------------------------------------- */
 
-char * pIniFindSection(const char * pData, /* inifile data buffer */
+char * pIniFindSection(const char * pData, /* INI file data buffer */
                        const char * pName) /* section name */
 {
    const char * pRet      = NULL;
@@ -752,7 +752,7 @@ Exit:;
 
 /* ------------------------------------------------------------------------- *\
    lIniGetStringValue converts an unterminated C style escaped string from
-   inifile buffer to it's related value. DstLen has to be at maximum as large
+   INI file buffer to it's related value. DstLen has to be at maximum as large
    as SrcLen + 1 for a terminating '\0' character. The function returns the
    number of written bytes. Source and Destination buffer may overlap.
    If the destination is NULL than the required buffer size is returned only.
@@ -853,7 +853,7 @@ size_t lIniGetStringValue(char *       pDst,   /* pointer to destination buffer 
 
 
 /* ------------------------------------------------------------------------- *\
-   lIniRemoveQuotes removes the quotes from a value read from inifile without
+   lIniRemoveQuotes removes the quotes from a value read from INI file without
    replacing C like escaped characters. The destination buffer length has to
    be at least as large as SrcLen + 1 (for a terminating '\0' character).
    The function returns the  number of bytes written to the destination string
@@ -944,18 +944,18 @@ size_t lIniRemoveQuotes(char *       pDst,   /* pointer to destination buffer */
 
 
 /* ------------------------------------------------------------------------- *\
-   bIniEntryRead reads the next entry within an inifile section. It returns
+   bIniEntryRead reads the next entry within an INI file section. It returns
    a pointer to an allocated PINI_ENTRY structure that contains the data of
    the first found entry. It fails, if no entry could be found before begin
    of the next section, if a terminating '\0' character was found or if the
    allocation of the return buffer has failed.
    If bUnescape is nonzero, then the entry name and its argument data
    are converted from a C like escape sequence format to binary format.
-   ppData is set to the data that follows this entry withing the inifile.
+   ppData is set to the data that follows this entry withing the INI file.
    The returned pointer must be released using free() after usage.
 \* ------------------------------------------------------------------------- */
 
-int bIniEntryRead(char **      ppData,    /* pointer to inifile data */
+int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
                   INI_ENTRY ** ppEntry,   /* storage for the allocated pointer */
                   int          bUnescape) /* wether or not replace C style format escapes */
 {
@@ -1011,7 +1011,7 @@ int bIniEntryRead(char **      ppData,    /* pointer to inifile data */
       }
    }
    else
-   {/* Let's simply copy the data from the inifile */
+   {/* Let's simply copy the data from the INI file */
       pEntry->NameSize = lIniRemoveQuotes(pEntry->pName, pName, NameSize) - 1; /* ignore the terminating '/0' in returned size */
 
       if((ArgSize) && (*pArg == '{'))
@@ -1039,7 +1039,7 @@ int bIniEntryRead(char **      ppData,    /* pointer to inifile data */
 
 
 /* ------------------------------------------------------------------------- *\
-   pIniFileRead reads the content of an inifile into an allocated buffer.
+   pIniFileRead reads the content of an INI file into an allocated buffer.
    The returned buffer is terminated by a '\0' character and must be released
    using free() after usage.
 \* ------------------------------------------------------------------------- */
@@ -1063,7 +1063,7 @@ char * pIniFileRead(const char * pIniFileName)
 
    if(fd == -1)
    {
-      vPrintLog(DFL_WRN,"Failed to open inifile '%s'! (%s)", pIniFileName, strerror(errno));
+      vPrintLog(DFL_WRN,"Failed to open INI file '%s'! (%s)", pIniFileName, strerror(errno));
       goto Exit;
    }
 
@@ -1079,7 +1079,7 @@ char * pIniFileRead(const char * pIniFileName)
    pRet = (char*) malloc((size_t) FileSize + 1);
    if(!pRet)
    {
-      vPrintLog(DFL_ERR,"Out of memory while reading the inifile '%s'! (%s)", pIniFileName, strerror(errno));
+      vPrintLog(DFL_ERR,"Out of memory while reading the INI file '%s'! (%s)", pIniFileName, strerror(errno));
       goto Exit;
    }
 
@@ -1099,7 +1099,7 @@ char * pIniFileRead(const char * pIniFileName)
 
    if(FileSize)
    {
-      vPrintLog(DFL_ERR,"Error while reading the inifile '%s'! (%s)", pIniFileName, strerror(errno));
+      vPrintLog(DFL_ERR,"Error while reading the INI file '%s'! (%s)", pIniFileName, strerror(errno));
 
       free(pRet);
       pRet = NULL;
