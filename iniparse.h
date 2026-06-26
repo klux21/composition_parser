@@ -103,7 +103,7 @@ char * pIniFindNextSection(const char * pData,             /* inifile data buffe
 
 int bIniEntryRead(char **      ppData,     /* pointer to inifile data */
                   INI_ENTRY ** ppEntry,    /* storage for the allocated pointer */
-                  int          bUnescape); /* wether or not replace C style format escapes */
+                  int          bUnescape); /* whether or not replace C-style format escape sequences */
 
 /* ------------------------------------------------------------------------- *\
    bIniEntryFind searces the next entry in a section and returns nonzero if
@@ -125,7 +125,7 @@ int bIniEntryFind(char **  ppData,    /* section data pointer */
    inifile buffer to it's related value. DstLen has to be at maximum as large
    as SrcLen + 1 for a terminating '\0' character. The function returns the
    number of written bytes. Source and Destination buffer may overlap.
-   If the destination is NULL than the required buffer size is returned only.
+   If the destination is NULL then the required buffer size is returned only.
 \* ------------------------------------------------------------------------- */
 
 size_t lIniGetStringValue(char *       pDst,    /* pointer to destination buffer */
@@ -134,7 +134,7 @@ size_t lIniGetStringValue(char *       pDst,    /* pointer to destination buffer
 
 /* ------------------------------------------------------------------------- *\
    lIniRemoveQuotes removes the quotes from a value read from inifile without
-   replacing C like escaped characters. The destination buffer length has to
+   replacing C-like escaped characters. The destination buffer length has to
    be at least as large as SrcLen + 1 (for a terminating '\0' character).
    The function returns the  number of bytes written to the destination string
    including the terminating '\0'. Source and destination buffer may overlap.

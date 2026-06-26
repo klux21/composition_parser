@@ -19,7 +19,7 @@ exit $?
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
-*  ORIGIN:        https://github/klux21/composition_parser                    *
+*  ORIGIN:        https://github.com/klux21/composition_parser                *
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
@@ -62,7 +62,7 @@ exit $?
 * of data storage.                                                            *
 *                                                                             *
 * The term 'devices' shall include any kind of local or non-local control     *
-* system of the stated devices as part of that device als well. Any assembly  *
+* system of the stated devices as part of that device as well. Any assembly   *
 * of more than one device is one and the same device regarding this license.  *
 *                                                                             *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" *
@@ -132,7 +132,7 @@ int64_t nsTimeStamp()
       vGetSystemTimePreciseAsFileTime(&CurrentTime);
    }
    else if(hmKernel32Dll == (HMODULE) -1)
-   { /* 1rst call */
+   { /* 1st call */
       hmKernel32Dll = LoadLibrary("Kernel32.dll");
       if(hmKernel32Dll)
          vGetSystemTimePreciseAsFileTime = (void (WINAPI * )(LPFILETIME)) GetProcAddress(hmKernel32Dll, "GetSystemTimePreciseAsFileTime");
@@ -183,7 +183,7 @@ int64_t nsTimeStamp()
 
 
 /* Here we iterate the top level entries. bIniEntryFind returns the pointers to the raw data in memory.
-   In case of data copisition subentries the data contains the enclosing curly braces.
+   In case of data composition subentries the data contains the enclosing curly braces.
    If the closing brace is missing and the document is terminated by a '\0' character the terminating '\0'
    is returned instead of the closing brace. */
 
@@ -283,7 +283,7 @@ int run_zero_copy_tests()
       }
    }
 
-   sfprintf(stdout, "\n%4d: basic zero_copy tests succeded, testing performance ...\n",  __LINE__);
+   sfprintf(stdout, "\n%4d: basic zero_copy tests succeeded, testing performance ...\n",  __LINE__);
 
    count = 1000;
    i64 = 0;
@@ -398,7 +398,7 @@ Exit:;
 
 
 /* Here we iterate the top level entries. bIniEntryFind returns the pointers to the raw data in memory.
-   In case of data copisition subentries the data contains the enclosing curly braces.
+   In case of data composition subentries the data contains the enclosing curly braces.
    If the closing brace is missing and the document is terminated by a '\0' character the terminating '\0'
    is returned instead of the closing brace. */
 
@@ -499,7 +499,7 @@ int run_string_copy_tests()
       free(pEntry);
    }
 
-   sfprintf(stdout, "\n%4d: basic string_copy tests succeded, testing performance ...\n",  __LINE__);
+   sfprintf(stdout, "\n%4d: basic string_copy tests succedeed, testing performance ...\n",  __LINE__);
 
    count = 1000;
    i64 = 0;

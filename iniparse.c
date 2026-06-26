@@ -13,7 +13,7 @@
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
-*  ORIGIN :      https://github/klux21/composition_parser                     *
+*  ORIGIN :      https://github.com/klux21/composition_parser                 *
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
@@ -355,7 +355,7 @@ static char * pIniFindBlockEnd (const char * pb)
             goto Exit; /* end of document */
       }
       else if((*pb == '\'')  || (*pb == '\"'))
-      {/* ignore  charactes inside of quoted strings */
+      {/* ignore  characters inside of quoted strings */
          char c = *pb;
 
          while(*(++pb) != c)
@@ -387,10 +387,10 @@ static char * pIniFindBlockEnd (const char * pb)
             if(*pb == '\\')
             { /* ignore all characters that are escaped except '\0' */
                if(!*(++pb))
-                  goto Exit; /* unexpexted end of document */
+                  goto Exit; /* unexpected end of document */
             }
             else if((*pb == '\'')  || (*pb == '\"'))
-            {/* a part of the section name is qoted and must be ignored */
+            {/* a part of the section name is quoted and must be ignored */
                char c = *pb;
 
                while(*(++pb) != c)
@@ -399,11 +399,11 @@ static char * pIniFindBlockEnd (const char * pb)
                      ++pb;
 
                   if(!*pb)
-                     goto Exit; /* unexpexted end of document */
+                     goto Exit; /* unexpected end of document */
                }
            }
            else if(!*pb)
-              goto Exit; /* unexpexted end of document */
+              goto Exit; /* unexpected end of document */
 
            ++pb;
 
@@ -423,7 +423,7 @@ static char * pIniFindBlockEnd (const char * pb)
 
 
 /* ------------------------------------------------------------------------- *\
-   bIniEntryFind searces the next entry in a section and returns nonzero if
+   bIniEntryFind searches the next entry in a section and returns nonzero if
    an entry was found. * ppData will be set to to the begin of the next
    section entry or to the character that terminates the section.
    Argument strings to entries which contain spaces have to be enclosed in
@@ -465,7 +465,7 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
             break;
       }
       else if((*pd == '\'')  || (*pd == '\"'))
-      {/* entry name given in qotes */
+      {/* entry name given in quotes */
          c = *pd;
 
          while(*(++pd) != c)
@@ -520,7 +520,7 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
                   break;
             }
             else if((*pd == '\'')  || (*pd == '\"'))
-            {/* entry name given in qotes */
+            {/* entry name given in quotes */
                c = *pd;
 
                while(*(++pd) != c)
@@ -617,10 +617,10 @@ char * pIniFindNextSection(const char * pData,             /* inifile data buffe
          if(*pd == '\\')
          { /* we must ignore nonzero characters after a backslash */
             if(!*(++pd)) 
-               goto Exit; /* unexpexted end of document */
+               goto Exit; /* unexpected end of document */
          }
          else if((*pd == '\'')  || (*pd == '\"'))
-         {/* a part of the section name was given in qotes */
+         {/* a part of the section name was given in quotes */
             char c = *pd;
 
             while(*(++pd) != c)
@@ -629,11 +629,11 @@ char * pIniFindNextSection(const char * pData,             /* inifile data buffe
                   ++pd;
 
                if(!*pd)
-                  goto Exit; /* unexpexted end of document */
+                  goto Exit; /* unexpected end of document */
             }
          }
          else if(!*pd)
-            goto Exit; /* unexpexted end of document */
+            goto Exit; /* unexpected end of document */
 
          ++pd;
 
@@ -786,7 +786,7 @@ size_t lIniGetStringValue(char *       pDst,   /* pointer to destination buffer 
          else if ((*ps == '\'') || (*ps == '\"'))
          { /* remove quotes */
             if(q)
-            {/* trailing qote? */
+            {/* trailing quote? */
                if(q == *ps)
                {
                   q = '\0';
@@ -823,7 +823,7 @@ size_t lIniGetStringValue(char *       pDst,   /* pointer to destination buffer 
          else if ((*ps == '\'') || (*ps == '\"'))
          { /* remove quotes */
             if(q)
-            {/* trailing qote? */
+            {/* trailing quote? */
                if(q == *ps)
                {
                   q = '\0';
