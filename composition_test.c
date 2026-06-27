@@ -657,23 +657,18 @@ int run_file_tests()
    {
       while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize))
       {
-         if (ArgSize)
+         if(ArgSize && (*pArg == '{'))
          {
-            if(*pArg == '{')
-            {
-               sfprintf(stdout, "\n%4d: found block    %*s%.*s { #* %zu bytes *#\n",
-                        __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"" , ArgSize);
-               ps = pArg + 1;
-               ++Indent;
-            }
-            else
-               sfprintf(stdout, "%4d: found entry    %*s%.*s = %.*s\n",
-                        __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"", (int) ArgSize, pArg);
+            sfprintf(stdout, "\n%4d: found block    %*s%.*s%s{ #* %zu bytes *#\n",
+                     __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " " : "", ArgSize);
+            ps = pArg + 1;
+            ++Indent;
          }
          else
          {
-            sfprintf(stdout, "%4d: found entry    %*s%.*s\n",
-                     __LINE__, (int)(Indent*3), "", (int) NameSize,  pName ? pName : "\"\"");
+            sfprintf(stdout, "%4d: found entry    %*s%.*s%s%.*s\n",
+                     __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
+                     ArgSize ? " = " : "", (int) ArgSize, pArg);
          }
       }
 
