@@ -258,8 +258,7 @@ static char get_C_char(const char ** ppSrc)
 
 
 /* ------------------------------------------------------------------------- *\
-   pIniFindCommentEnd returns a pointer to the character that terminates
-   the comment that pb points to.
+   pIniFindCommentEnd returns a pointer to first character the comment.
 \* ------------------------------------------------------------------------- */
 
 static char * pIniFindCommentEnd(const char * pb)
@@ -277,6 +276,7 @@ static char * pIniFindCommentEnd(const char * pb)
          {  /* end of comment? */
             if(*(++pb) == s)
             { /* end of comment found */
+               ++pb;
                break;
             }
          }
@@ -284,8 +284,8 @@ static char * pIniFindCommentEnd(const char * pb)
    }
    else
    {  /* line comment starts with #* (or ;*) and ends at the end of the current line */
-      while (*pb && (*pb != '\n'))
-         ++pb;
+      while (*pb && (*pb++ != '\n'))
+      {};
    }
 
    Exit:;
@@ -315,8 +315,8 @@ static char * pSkipBlanksAndComments(const char * pb)
       if(!*pb)
          goto Exit; /* end of document */
 
-      while(IS_INI_BLANK(*(++pb))) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
-      {};
+      while(IS_INI_BLANK(*pb)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+        ++pb;
    }
 
    Exit:;
@@ -369,7 +369,10 @@ static char * pIniFindBlockEnd (const char * pb)
       else if(*pb == '}')
       {
          if(!-- BlockDepth)
+         {
+            ++pb;
             goto Exit;
+         }
       }
       else if(*pb == '{')
       {
@@ -493,10 +496,13 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
       { /* subblock found */
          pArg   = pd;
          pd     = pIniFindBlockEnd(pd + 1);
-         ArgLen = (size_t)(pd - pArg) + 1; /* calculate length but treat the block terminating character as part of the argument */
+
+         ArgLen = (size_t)(pd - pArg); /* calculate length but treat the block terminating character as part of the argument */
 
          if(*pd)
-            pd  = pSkipBlanksAndComments(pd + 1); /* skip subsequent blanks */
+            pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
+         else
+            ++ArgLen;
       }
       else
       {
@@ -537,10 +543,12 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
    { /* subsequent subblock found */
       pArg   = pd;
       pd     = pIniFindBlockEnd(pd + 1);
-      ArgLen = (size_t)(pd - pArg) + 1; /* calculate length but treat the block terminating character as part of the argument */
+      ArgLen = (size_t)(pd - pArg); /* calculate length but treat the block terminating character as part of the argument */
 
       if(*pd)
-         pd  = pSkipBlanksAndComments(pd + 1); /* skip subsequent blanks */
+         pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
+      else
+         ++ArgLen;
    }
 
    if(NameLen || ArgLen)
