@@ -258,7 +258,8 @@ static char get_C_char(const char ** ppSrc)
 
 
 /* ------------------------------------------------------------------------- *\
-   pIniFindCommentEnd returns a pointer to first character the comment.
+   pIniFindCommentEnd returns a pointer to the first character after
+   a comment if pb points to the first character of a comment.
 \* ------------------------------------------------------------------------- */
 
 static char * pIniFindCommentEnd(const char * pb)
@@ -327,7 +328,9 @@ static char * pSkipBlanksAndComments(const char * pb)
 
 
 /* ------------------------------------------------------------------------- *\
-   pFindBlockEnd returns the pointer the character that terminates the block 
+   pFindBlockEnd returns a pointer to the first character after the block
+   that pb points to. pb must not point to the inner of a quoted string,
+   a comment or a header.
 \* ------------------------------------------------------------------------- */
 
 static char * pIniFindBlockEnd (const char * pb)
@@ -422,6 +425,7 @@ static char * pIniFindBlockEnd (const char * pb)
    Exit:;
    return((char *) pb);
 } /* char * pIniFindBlockEnd (const char * pBlock) */
+
 
 
 /* ------------------------------------------------------------------------- *\
