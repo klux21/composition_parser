@@ -255,6 +255,8 @@ static char get_C_char(const char ** ppSrc)
    return (c);
 }/* get_C_char(char ** pSrc) */
 
+
+
 /* ------------------------------------------------------------------------- *\
    pIniFindCommentEnd returns a pointer to the character that terminates
    the comment that pb points to.
@@ -290,6 +292,8 @@ static char * pIniFindCommentEnd(const char * pb)
 
    return ((char *) pb);
 }/* const char * pIniFindCommentEnd(const char * pb) */
+
+
 
 /* ------------------------------------------------------------------------- *\
    pSkipBlanksAndComments: helper for ignoring blanks and comments
@@ -525,8 +529,8 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
             ++pd;
          }
 
-         ArgLen = (size_t)(pd - pArg);        /* calculate length of argument string */
-         pd = pSkipBlanksAndComments(pd + 1); /* skip subsequent blanks */
+         ArgLen = (size_t)(pd - pArg);    /* calculate length of argument string */
+         pd = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
       }
    }/* argument string found */
    else if ((*pd == '{') && !NameLen)
