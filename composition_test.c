@@ -204,7 +204,7 @@ int run_zero_copy_tests()
 
    char * pd = (char*) "testname = zero_copy_tests \n"
                        "inttests = { ib=0b1111 io=0o1234567 id=000056789 ix=0xabcd987 } \n"
-                       "floattests { fb=0b11.11e100 fo=0o1234.56e10 fd=1.2345e64 fx=0xabc.defp10 } \n";
+                       "floattests = { fb=0b11.11e100 fo=0o1234.56e10 fd=1.2345e64 fx=0xabc.defp10 } \n";
    char * ps  = pd;
    char * pa  = NULL;
    char * pe  = NULL;
@@ -412,7 +412,7 @@ int run_string_copy_tests()
 
    char * pd = (char*) "testname = string_copy_tests \n"
                        "inttests = { ib=0b1111 io=0o1234567 id=000056789 ix=0xabcd987 } \n"
-                       "floattests { fb=0b11.11e100 fo=0o1234.56e10 fd=1.2345e64 fx=0xabc.defp10 } \n";
+                       "floattests = { fb=0b11.11e100 fo=0o1234.56e10 fd=1.2345e64 fx=0xabc.defp10 } \n";
 
    char * ps  = pd;
    char * pa  = NULL;
@@ -660,7 +660,7 @@ int run_file_tests()
          if(ArgSize && (*pArg == '{'))
          {
             sfprintf(stdout, "\n%4d: found block    %*s%.*s%s{ #* %zu bytes *#\n",
-                     __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " " : "", ArgSize);
+                     __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " = " : "", ArgSize);
             ps = pArg + 1;
             ++Indent;
          }

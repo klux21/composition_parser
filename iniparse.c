@@ -103,14 +103,14 @@ static const uint8_t ini_char_type[256] = { 0x08,0x00,0x00,0x00, 0x00,0x00,0x00,
                                             0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,   0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,
                                             0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,   0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00};
 
-#define IS_INI_CHAR(x)               (!ini_char_type[(uint8_t) (x)])       /* characters without any special function */
+#define IS_INI_CHAR(x)               (!ini_char_type[(uint8_t)(x)])        /* characters without any special function */
 #define IS_INI_ARG(x)                (ini_char_type[(uint8_t) (x)] & 0x01) /* entry argument = { */
 #define IS_INI_BLANK(x)              (ini_char_type[(uint8_t) (x)] & 0x02) /* white spaces */
 #define IS_INI_COMMENT(x)            (ini_char_type[(uint8_t) (x)] & 0x04) /* comment start markers ; #   */
 #define IS_INI_SECT_END(x)           (ini_char_type[(uint8_t) (x)] & 0x08) /* section end indicators [ ] } '\0' */
 #define IS_INI_QUOTE                 (ini_char_type[(uint8_t) (x)] & 0x10) /* backslash \ or quote ' " */
 
-#define IS_INI_SPECIAL(x)            (ini_char_type[(uint8_t) (x)] & 0x0f) /* not for unquoted strings '\0',' ','\t','\n','\f','\v','\r','#',';','[',']','{','}','=' */
+#define IS_INI_SPECIAL(x)            (ini_char_type[(uint8_t) (x)] & 0x0f) /* terminates unquoted strings '\0',' ','\t','\n','\f','\v','\r','#',';','[',']','{','}','=' */
 #define IS_INI_BLANK_OR_COMMENT(x)   (ini_char_type[(uint8_t) (x)] & 0x06) /* whitespace or start of a comment */
 
 
@@ -255,6 +255,41 @@ static char get_C_char(const char ** ppSrc)
    return (c);
 }/* get_C_char(char ** pSrc) */
 
+/* ------------------------------------------------------------------------- *\
+   pIniFindCommentEnd returns a pointer to the character that terminates
+   the comment that pb points to.
+\* ------------------------------------------------------------------------- */
+
+static char * pIniFindCommentEnd(const char * pb)
+{
+   char s = *pb; /* comment start character */
+
+   if(!IS_INI_COMMENT(s))
+      goto Exit;
+
+   if(*(++pb) == '*')
+   { /* a block comment starts with #* (or ;*) ends with *# (or *;) or at the end of the data */
+      do
+      {
+         if(*(++pb) == '*')
+         {  /* end of comment? */
+            if(*(++pb) == s)
+            { /* end of comment found */
+               break;
+            }
+         }
+      } while(*pb);
+   }
+   else
+   {  /* line comment starts with #* (or ;*) and ends at the end of the current line */
+      while (*pb && (*pb != '\n'))
+         ++pb;
+   }
+
+   Exit:;
+
+   return ((char *) pb);
+}/* const char * pIniFindCommentEnd(const char * pb) */
 
 /* ------------------------------------------------------------------------- *\
    pSkipBlanksAndComments: helper for ignoring blanks and comments
@@ -262,63 +297,23 @@ static char get_C_char(const char ** ppSrc)
 
 static char * pSkipBlanksAndComments(const char * pb)
 {
-   char s; /* comment start character */
-   char c; /* character pb points to */
-
    if(!pb)
       goto Exit;
 
-   c = *pb;
+   /* ignore tabs and spaces and other separating blanks */
+   while(IS_INI_BLANK(*pb)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+      ++pb;
 
-   do
+   while(IS_INI_COMMENT(*pb))
    {
-      /* ignore tabs and spaces and other separating blanks */
-#if 0
-      while((c == 0x20) || ((c >= 0x9) && (c <= 0xd))) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
-#endif
-      while(IS_INI_BLANK(c)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
-          c = *(++pb);
-#if 0
-      if((c != ';') && (c != '#'))
-#endif
-      if(!IS_INI_COMMENT(c))
-         break; /* it's neither blank nor comment */
+      pb = pIniFindCommentEnd(pb);
 
-      /* start of a comment that must be ignored */
+      if(!*pb)
+         goto Exit; /* end of document */
 
-      s = c;
-      c = *(++pb);
-
-      if(c == '*')
-      { /* a block comment starts with #* (or ;*) ends with *# (or *;) or at the end of the data */
-         do
-         {
-            c = *(++pb);
-
-            if(c == '*')
-            {  /* end of comment? */
-               c = *(++pb);
-
-               if(c == s)
-               { /* end of comment found */
-                  c = *(++pb); /* skip the block comment terminating ';' or '#' */
-                  break;
-               }
-            }
-         } while(c);
-      }
-      else
-      {  /* line comment starts with #* (or ;*) and ends at the end of the current line */
-         while (c != '\n')
-         {
-            if(!c)
-              goto Exit;
-
-            c = *(++pb);
-         }
-         c = *(++pb); /* skip the line comment terminating '\n' */
-      }
-   } while(c);
+      while(IS_INI_BLANK(*(++pb))) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+      {};
+   }
 
    Exit:;
 
@@ -486,16 +481,7 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
    /* end of name, find argument */
    pd = pSkipBlanksAndComments(pd);
 
-   if (*pd == '{')
-   { /* subblock found */
-         pArg   = pd;
-         pd     = pIniFindBlockEnd(pd + 1);
-         ArgLen = (size_t)(pd - pArg) + 1; /* calculate length but treat the block terminating character as part of the argument */
-
-         if(*pd)
-            pd  = pSkipBlanksAndComments(pd + 1); /* skip subsequent blanks */
-   }
-   else if(*pd == '=')
+   if(*pd == '=')
    {/* argument string found */
       pd = pSkipBlanksAndComments(pd + 1); /* skip '=' and subsequent blanks */
 
@@ -543,6 +529,15 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
          pd = pSkipBlanksAndComments(pd + 1); /* skip subsequent blanks */
       }
    }/* argument string found */
+   else if ((*pd == '{') && !NameLen)
+   { /* subsequent subblock found */
+      pArg   = pd;
+      pd     = pIniFindBlockEnd(pd + 1);
+      ArgLen = (size_t)(pd - pArg) + 1; /* calculate length but treat the block terminating character as part of the argument */
+
+      if(*pd)
+         pd  = pSkipBlanksAndComments(pd + 1); /* skip subsequent blanks */
+   }
 
    if(NameLen || ArgLen)
    {
@@ -646,10 +641,10 @@ char * pIniFindNextSection(const char * pData,             /* INI file data buff
       /* Skip section header terminating ']' found. Skip all blanks and comments at begin of that section. */
       /* pcRet points to the begin of the first entry or end of section afterwards. */
       pcRet = pSkipBlanksAndComments(pd + 1);
- 
+
       if(ppSectionName)
          *ppSectionName = pSectionName;
- 
+
       if(pSectionNameSize)
          *pSectionNameSize = SectionNameSize;
    }
