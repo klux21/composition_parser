@@ -506,7 +506,7 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
          if(*pd)
             pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
          else
-            ++ArgLen;
+            ++ArgLen; /* add the terminating '\0' as the block termination */
       }
       else
       {
@@ -552,7 +552,7 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
       if(*pd)
          pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
       else
-         ++ArgLen;
+         ++ArgLen; /* add the terminating '\0' as the block termination */
    }
 
    if(NameLen || ArgLen)
@@ -595,79 +595,100 @@ Exit:;
   pIniFindNextSection searches the next section in given INI file buffer.
   It returns a pointer to the begin of the sections data or NULL if there
   doesn't exist any section within the data.
+  The iterator ppData point to will be set to the begin of the returned
+  section or the character that stops the scan.
 \* ------------------------------------------------------------------------- */
 
-char * pIniFindNextSection(const char * pData,             /* INI file data buffer */
-                           char **      ppSectionName,     /* pointer to section name */
-                           size_t *     pSectionNameSize)  /* pointer to section name length */
+char * pIniFindNextSection(char **  ppData,           /* INI file data buffer */
+                           char **  ppSectionName,    /* pointer to section name */
+                           size_t * pSectionNameSize) /* pointer to section name length */
 {
-   const char * pcRet           = NULL;
-   char *       pd              = (char *) pData;
-   char *       pSectionName    = NULL;
-   size_t       SectionNameSize = 0;
+   char * pd              = NULL;
+   char * pSectionName    = NULL;
+   size_t SectionNameSize = 0;
 
    /* vPrintLog(DFL_ERR,"Searching section \"%s\"!", Name); */
-
-   if(!pd)
+   if(!ppData)
       goto Exit;
+
+   pd = *ppData;
 
    while(bIniEntryFind(&pd, NULL, NULL, NULL, NULL))
    { /* skip all INI file entries */
    }
 
-   if(*pd == '[')
-   {  /* Found a section header. Let's find the name and the end of it... */
-      if(IS_INI_BLANK_OR_COMMENT(*(++pd)))
-          pd = pSkipBlanksAndComments(pd);
-
-      pSectionName = pd;
-
-      /* let's find the end of the section header */
-      while(*pd != ']')
-      {
-         if(*pd == '\\')
-         { /* we must ignore nonzero characters after a backslash */
-            if(!*(++pd)) 
-               goto Exit; /* unexpected end of document */
-         }
-         else if((*pd == '\'')  || (*pd == '\"'))
-         {/* a part of the section name was given in quotes */
-            char c = *pd;
-
-            while(*(++pd) != c)
-            {
-               if(*pd == '\\')
-                  ++pd;
-
-               if(!*pd)
-                  goto Exit; /* unexpected end of document */
-            }
-         }
-         else if(!*pd)
-            goto Exit; /* unexpected end of document */
-
-         ++pd;
-
-         SectionNameSize = pd - pSectionName;
-
-         if(IS_INI_BLANK_OR_COMMENT(*pd))
-            pd = pSkipBlanksAndComments(pd);
-      }
-
-      /* Skip section header terminating ']' found. Skip all blanks and comments at begin of that section. */
-      /* pcRet points to the begin of the first entry or end of section afterwards. */
-      pcRet = pSkipBlanksAndComments(pd + 1);
-
-      if(ppSectionName)
-         *ppSectionName = pSectionName;
-
-      if(pSectionNameSize)
-         *pSectionNameSize = SectionNameSize;
+   if(*pd != '[')
+   {
+      *ppData = pd;
+      pd = NULL;
+      goto Exit; /* unexpected end of document */
    }
 
+   /* Found a section header. Let's find the name and the end of it... */
+   if(IS_INI_BLANK_OR_COMMENT(*(++pd)))
+       pd = pSkipBlanksAndComments(pd);
+
+   pSectionName = pd;
+
+   /* let's find the end of the section header */
+   while(*pd != ']')
+   {
+      if(*pd == '\\')
+      { /* we must ignore nonzero characters after a backslash */
+         if(!*(++pd)) 
+         { /* unexpected end of document */
+            *ppData = pd;
+            pd = NULL;
+            goto Exit; /* unexpected end of document */
+         }
+      }
+      else if((*pd == '\'')  || (*pd == '\"'))
+      {/* a part of the section name was given in quotes */
+         char c = *pd;
+
+         while(*(++pd) != c)
+         {
+            if(*pd == '\\')
+               ++pd;
+
+            if(!*pd)
+            { /* unexpected end of document */
+               *ppData = pd;
+               pd = NULL;
+               goto Exit;
+            }
+         }
+      }
+      else if(!*pd)
+      { /* unexpected end of document */
+         *ppData = pd;
+         pd = NULL;
+         goto Exit;
+      }
+
+      ++pd;
+
+      SectionNameSize = pd - pSectionName;
+
+      if(IS_INI_BLANK_OR_COMMENT(*pd))
+         pd = pSkipBlanksAndComments(pd);
+   }
+
+   /* Skip section header terminating ']' found. Skip all blanks and comments at begin of that section. */
+   /* pcRet points to the begin of the first entry or end of section afterwards. */
+   pd = pSkipBlanksAndComments(pd + 1);
+   *ppData = pd;
+
+   if(ppSectionName)
+      *ppSectionName = pSectionName;
+
+   if(pSectionNameSize)
+      *pSectionNameSize = SectionNameSize;
+
 Exit:;
-   return ((char *) pcRet);
-}/* pIniFindNextSection(char * pData, char** ppSectionName, size_t * pSectionNameSize) */
+
+   return (pd);
+}/* pIniFindNextSection(char ** pData, char** ppSectionName, size_t * pSectionNameSize) */
 
 
 /* ------------------------------------------------------------------------- *\
@@ -698,7 +719,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
 
    while(pData && *pData)
    {
-      pData = pIniFindNextSection(pData, &FoundName, &FoundLen);
+      pData = (const char *) pIniFindNextSection((char**)&pData, &FoundName, &FoundLen);
       /* vPrintLog(DFL_DBG,"### section [%.*s]: '%.20s ...'",
       (int)FoundLen, FoundName, pData);  */
 

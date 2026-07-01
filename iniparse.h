@@ -70,6 +70,7 @@ struct INI_ENTRY_S
    The returned buffer is terminated by a '\0' character and must be released
    using free() after usage.
 \* ------------------------------------------------------------------------- */
+
 char * pIniFileRead(const char * IniFileName);
 
 /* ------------------------------------------------------------------------- *\
@@ -77,17 +78,21 @@ char * pIniFileRead(const char * IniFileName);
    pointer to the begin of the sections content or nonzero if the section
    doesn't exist.
 \* ------------------------------------------------------------------------- */
+
 char * pIniFindSection(const char * pData,  /* pointer to an INI file data buffer to read */
                        const char * pName); /* INI file section name */
 
 /* ------------------------------------------------------------------------- *\
-  pIniFindNextSection searches the next section in a given INI file buffer
+  pIniFindNextSection searches the next section in given INI file buffer.
   It returns a pointer to the begin of the sections data or NULL if there
-  doesn't exist any next section within the data.
+  doesn't exist any section within the data.
+  The iterator ppData point to will be set to the begin of the returned
+  section or the character that stops the scan.
 \* ------------------------------------------------------------------------- */
-char * pIniFindNextSection(const char * pData,             /* INI file data buffer to scan */
-                           char **      ppSectionName,     /* in success case: section name */
-                           size_t *     pSectionNameSize); /* length of the section name */
+
+char * pIniFindNextSection(char **  ppData,            /* INI file data buffer */
+                           char **  ppSectionName,     /* pointer to section name */
+                           size_t * pSectionNameSize); /* pointer to section name length */
 
 /* ------------------------------------------------------------------------- *\
    bIniEntryRead reads the next entry within an INI file section and returns
