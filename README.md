@@ -112,11 +112,11 @@ For the usage of platform independ fprintf format strings the following project 
 str2num and callback_printf are expected in parallel directories.
 
 The little test project `composition_test.c` contains several usage samples.
+
 The code of the parser has a rather early experimental state but works like a charm.
 However, it may change quite a bit in future if the requirements and features grow.
 
-`composition_test.c` is a C file only but an executable script for console of a Unix operating
-systems. You can run it for executing the test.
+You can execute run_test.sh for executing the tests in Unix compatible operating systems.
 For Microsoft Visual C++ there exist a Visual Studio project in the VS2010 directory.
 
 The file reading test in composition_test.c iterates the content of the file `composition_test.ini` only
