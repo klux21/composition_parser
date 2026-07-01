@@ -116,7 +116,7 @@ The little test project `composition_test.c` contains several usage samples.
 The code of the parser has a rather early experimental state but works like a charm.
 However, it may change quite a bit in future if the requirements and features grow.
 
-You can execute run_test.sh for executing the tests in Unix compatible operating systems.
+You can execute run_test.sh for running the tests in Unix compatible operating systems.
 For Microsoft Visual C++ there exist a Visual Studio project in the VS2010 directory.
 
 The file reading test in composition_test.c iterates the content of the file `composition_test.ini` only
