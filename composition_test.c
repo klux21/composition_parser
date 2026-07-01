@@ -91,6 +91,9 @@ exit $?
 #include <windows.h>
 
 #if defined (_WIN32)
+#include <io.h>
+#include <fcntl.h>
+
 #define strtoll     _strtoi64
 #define strtoull    _strtoui64
 #endif
@@ -113,6 +116,54 @@ exit $?
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
+#endif
+
+#if defined (_WIN32)
+
+static UINT (WINAPI * pGetConsoleOutputCP)()        = NULL;
+static BOOL (WINAPI * pSetConsoleOutputCP)(UINT CP) = NULL;
+
+int bInitCPFunctions()
+{
+   int bRet = 0;
+   static HMODULE hmKernel32Dll = 0;
+
+   if(!hmKernel32Dll)
+   {
+      hmKernel32Dll = LoadLibrary(TEXT("Kernel32.dll"));
+      if(hmKernel32Dll)
+      {
+         pGetConsoleOutputCP = (UINT (WINAPI * )())    GetProcAddress(hmKernel32Dll, "GetConsoleOutputCP");
+         pSetConsoleOutputCP = (BOOL (WINAPI *)(UINT)) GetProcAddress(hmKernel32Dll, "SetConsoleOutputCP");
+         bRet = 1;
+      }
+   }
+   return (bRet);
+} /* bInitCPfuntiontions() */
+
+static UINT GetWindowsConsoleOutputCP()
+{
+   UINT uRet = 0;
+
+   bInitCPFunctions();
+
+   if(pGetConsoleOutputCP)
+      uRet = pGetConsoleOutputCP();
+
+   return (uRet);
+} /* UINT GetWindowsConsoleOutputCP() */
+
+static UINT SetWindowsConsoleOutputCP(UINT CP)
+{
+   UINT uRet = 0;
+
+   bInitCPFunctions();
+
+   if(pSetConsoleOutputCP)
+      uRet = pSetConsoleOutputCP(CP);
+
+   return (uRet);
+} /* UINT SetWindowsConsoleOutputCP(UINT CP) */
 #endif
 
 #if defined (_WIN32) || defined (__CYGWIN__)
@@ -621,11 +672,13 @@ Exit:;
    return(iRet);
 }/* run_string_copy_tests() */
 
+
+
 /* ------------------------------------------------------------------------- *\
    The file tests are reading and iterating a test file
 \* ------------------------------------------------------------------------- */
 
-int run_file_tests()
+int run_file_iteration_tests()
 {
    int iRet = 0;
 
@@ -640,7 +693,6 @@ int run_file_tests()
    const char * pIniFile   = "./composition_test.ini";
    char *       pIniData   = pIniFileRead(pIniFile);
    char *       ps         = pIniData;
-   char *       pe;
 
    size_t Indent = 0;
 
@@ -669,24 +721,30 @@ int run_file_tests()
             sfprintf(stdout, "%4d: found entry    %*s%.*s%s%.*s\n",
                      __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
                      ArgSize ? " = " : "", (int) ArgSize, pArg);
+
+            if((ArgSize && (pArg[ArgSize] <= 32)) || (!ArgSize && ((pName[NameSize] <= 32) || (pName[NameSize] == '='))))
+            {
+               if((NameSize != lIniGetStringValue(pName, pName, NameSize) - 1) ||
+                  (ArgSize != lIniGetStringValue(pArg, pArg, ArgSize) - 1)) 
+               {
+                  sfprintf(stdout, "%4d:  unescaped:   %*s\"%.*s%s%.*s\"\n",
+                           __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
+                           ArgSize ? " = " : "", (int) ArgSize, pArg);
+               }
+            }
          }
       }
 
-      pe = ps;
-
-      ps = pIniFindNextSection(ps, &pSectionName, &SectionNameSize);
-      if(ps)
+      if(pIniFindNextSection(&ps, &pSectionName, &SectionNameSize))
       {
          sfprintf(stdout, "\n%4d: found section  %*s[%.*s]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, pSectionName ? pSectionName : "");
       }
       else
       {
-         ps = pe;
-
          if(Indent)
          {
             --Indent;
-            sfprintf(stdout, "%4d:                %*s%.1s\n", __LINE__, (int)(Indent*3), "", ps);
+            sfprintf(stdout, "%4d:   block end    %*s%.1s\n", __LINE__, (int)(Indent*3), "", ps);
 
             if(*ps != '}')
                sfprintf(stdout, "%4d: unexpected char! ('%.1s' 0x%x)!\n", __LINE__, ps, (unsigned int) *ps);
@@ -707,10 +765,10 @@ int run_file_tests()
    if(pIniData)
       free(pIniData);
 
-   sfprintf(stdout, "%4d: file tests %s!\n\n", __LINE__, iRet ? "succeeded" : "failed");
+   sfprintf(stdout, "%4d: file iteration test %s!\n\n", __LINE__, iRet ? "succeeded" : "failed");
 
    return (iRet);
-} /* run_file_tests() */
+} /* run_file_iteration_tests() */
 
 
 
@@ -722,7 +780,13 @@ int main(int argc, char * argv[])
 {
     int iRet = 1;
 
-    if(!run_file_tests())
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    UINT OldCP = GetWindowsConsoleOutputCP(); /* default console input codepage usually 850 */
+    _setmode(_fileno(stdin), _O_U8TEXT);
+    SetWindowsConsoleOutputCP(65001);
+#endif
+
+    if(!run_file_iteration_tests())
         goto Exit;
 
     if(!run_string_copy_tests())
@@ -734,6 +798,11 @@ int main(int argc, char * argv[])
     iRet = 0;
 
     Exit:;
+
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    SetWindowsConsoleOutputCP(OldCP);
+    _setmode(_fileno(stdin), _O_TEXT);
+#endif
 
     if(!iRet)
         sfprintf(stdout, "All tests passed!\n");
