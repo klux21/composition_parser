@@ -333,7 +333,7 @@ static char * pSkipBlanksAndComments(const char * pb)
    a comment or a header.
 \* ------------------------------------------------------------------------- */
 
-static char * pIniFindBlockEnd (const char * pb)
+char * pIniFindBlockEnd (const char * pb)
 {
    size_t BlockDepth = 1;
 
@@ -437,19 +437,20 @@ static char * pIniFindBlockEnd (const char * pb)
    Name or argument embracing quotes or braces will be not removed.
 \* ------------------------------------------------------------------------- */
 
-int bIniEntryFind(char **  ppData,      /* section data pointer */
-                  char **  ppName,      /* returned pointer to entry name */
-                  size_t * pNameSize,   /* will be set to the length of the name */
-                  char **  ppArg,       /* pointer to the entries parameter string */
-                  size_t * pArgSize)    /* length of parameter string */
+int bIniEntryFind(char **  ppData,        /* section data pointer */
+                  char **  ppName,        /* returned pointer to entry name */
+                  size_t * pNameSize,     /* will be set to the length of the name */
+                  char **  ppArg,         /* pointer to the entries parameter string */
+                  size_t * pArgSize,      /* length of parameter string */
+                  int      bFindBlockEnd) /* whether to find the end of a block or just the begin */
 {
-   int bRet       = 0;
-   char * pd      = NULL; /* data pointer for temporary usage */
-   char c         = 0;    /* char for temporary usage */
-   char * pName   = NULL; /* pointer to name */
-   char * pArg    = NULL; /* pointer to argument string */
-   size_t NameLen = 0;    /* length of name */
-   size_t ArgLen  = 0;    /* argument length */
+   int    bRet     = 0;
+   char * pd       = NULL; /* data pointer for temporary usage */
+   char   c        = 0;    /* char for temporary usage */
+   char * pName    = NULL; /* pointer to name */
+   char * pArg     = NULL; /* pointer to argument string */
+   size_t NameSize = 0;    /* length of name */
+   size_t ArgSize  = 0;    /* argument length */
 
    if(!ppData || !*ppData)
       goto Exit; /* invalid argument pointer */
@@ -487,7 +488,7 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
       ++pd; /* add character to string */
    }
 
-   NameLen = (size_t)(pd - pName); /* calculate name length */
+   NameSize = (size_t)(pd - pName); /* calculate name length */
 
    /* end of name, find argument */
    pd = pSkipBlanksAndComments(pd);
@@ -498,15 +499,22 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
 
       if (*pd == '{')
       { /* subblock found */
-         pArg   = pd;
-         pd     = pIniFindBlockEnd(pd + 1);
-
-         ArgLen = (size_t)(pd - pArg); /* calculate length but treat the block terminating character as part of the argument */
-
-         if(*pd)
-            pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
+         pArg = pd++;
+         if(!bFindBlockEnd)
+         {
+           ArgSize = 1;
+         }
          else
-            ++ArgLen; /* add the terminating '\0' as the block termination */
+         {
+            pd = pIniFindBlockEnd(pd);
+
+            ArgSize = (size_t)(pd - pArg); /* calculate length but treat the block terminating character as part of the argument */
+
+            if(*pd)
+               pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
+            else
+               ++ArgSize; /* add the terminating '\0' as the block termination */
+         }
       }
       else
       {
@@ -539,23 +547,31 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
             ++pd;
          }
 
-         ArgLen = (size_t)(pd - pArg);    /* calculate length of argument string */
+         ArgSize = (size_t)(pd - pArg);    /* calculate length of argument string */
          pd = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
       }
    }/* argument string found */
-   else if ((*pd == '{') && !NameLen)
-   { /* subsequent subblock found */
-      pArg   = pd;
-      pd     = pIniFindBlockEnd(pd + 1);
-      ArgLen = (size_t)(pd - pArg); /* calculate length but treat the block terminating character as part of the argument */
-
-      if(*pd)
-         pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
+   else if ((*pd == '{') && !NameSize)
+   { /* subblock without name found */
+      pArg = pd++;
+      if(!bFindBlockEnd)
+      {
+         ArgSize = 1;
+      }
       else
-         ++ArgLen; /* add the terminating '\0' as the block termination */
+      {
+         pd = pIniFindBlockEnd(pd);
+
+         ArgSize = (size_t)(pd - pArg); /* calculate length but treat the block terminating character as part of the argument */
+
+         if(*pd)
+            pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
+         else
+            ++ArgSize; /* add the terminating '\0' as the block termination */
+      }
    }
 
-   if(NameLen || ArgLen)
+   if(NameSize || ArgSize)
    {
       bRet = 1;
 
@@ -563,19 +579,19 @@ int bIniEntryFind(char **  ppData,      /* section data pointer */
          *ppName = pName;
 
       if(pNameSize)
-         *pNameSize = NameLen;
+         *pNameSize = NameSize;
 
       if(ppArg)
          *ppArg = pArg;
 
       if(pArgSize)
-         *pArgSize = ArgLen;
+         *pArgSize = ArgSize;
 
       if(*ppData) /* let's find begin of next entry or next section and store it into pData */
          *ppData = pd;
 
       vPrintLog(DFL_DBG,"Found entry: name[%lu] = \'%.*s\'   arg[%lu] = \'%.*s\'",
-                (unsigned long) NameLen, (int) NameLen, pName, (unsigned long) ArgLen, (int) ArgLen, pArg);
+                (unsigned long) NameSize, (int) NameSize, pName, (unsigned long) ArgSize, (int) ArgSize, pArg);
    }
 
 Exit:;
@@ -613,7 +629,7 @@ char * pIniFindNextSection(char **  ppData,           /* INI file data buffer */
 
    pd = *ppData;
 
-   while(bIniEntryFind(&pd, NULL, NULL, NULL, NULL))
+   while(bIniEntryFind(&pd, NULL, NULL, NULL, NULL, 1))
    { /* skip all INI file entries */
    }
 
@@ -700,7 +716,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
                        const char * pName) /* section name */
 {
    const char * pRet      = NULL;
-   size_t       NameLen   = 0;
+   size_t       NameSize  = 0;
    char *       FoundName = NULL;
    size_t       FoundLen  = 0;
 
@@ -715,7 +731,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
       goto Exit;
    }
 
-   NameLen = strlen(pName);
+   NameSize = strlen(pName);
 
    while(pData && *pData)
    {
@@ -723,7 +739,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
       /* vPrintLog(DFL_DBG,"### section [%.*s]: '%.20s ...'",
       (int)FoundLen, FoundName, pData);  */
 
-      if(NameLen == FoundLen)
+      if(NameSize == FoundLen)
       {
          if(!strncasecmp(pName, FoundName, FoundLen))
          {
@@ -731,7 +747,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
             goto Exit; /* section found */
          }
       }
-      else if(FoundLen > NameLen)
+      else if(FoundLen > NameSize)
       { /* convert special characters and ignore quotation marks in the found string */
          const char * pn = pName;
          const char * ps = FoundName;
@@ -750,7 +766,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
             }
             else
             {
-               if((size_t)(pn - pName) >= NameLen)
+               if((size_t)(pn - pName) >= NameSize)
                   break; /* Searched name is shorter then the found one */
 
                if(*pn++ != get_C_char(&ps))
@@ -758,7 +774,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
             }
          }
 
-         if((pn == (pName + NameLen)) &&
+         if((pn == (pName + NameSize)) &&
             (ps == (FoundName + FoundLen)))
          { /* searched section found */
             pRet = pData;
@@ -766,9 +782,9 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
          }
 
          /* vPrintLog(DFL_DBG,"!!! Section [%.*s|%.*s] != [%.*s|%.*s]",
-                      pn - pName, pName,(int)(NameLen - (pn - pName)), pn,
+                      pn - pName, pName,(int)(NameSize - (pn - pName)), pn,
                       ps - FoundName, FoundName, (int)(FoundLen - (ps - FoundName)), ps); */
-      }/* if(FoundLen > NameLen) */
+      }/* if(FoundLen > NameSize) */
    }/* while(*pData) */
 
 Exit:;
@@ -1003,14 +1019,8 @@ int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
 
    pd = *ppData;
 
-   if(!bIniEntryFind(&pd,       /* section data to be read (In+Out) */
-                     &pName,    /* returned pointer to entry name */
-                     &NameSize, /* returned length of the name */
-                     &pArg,     /* returned pointer to the value string */
-                     &ArgSize)) /* returned length of the value string */
-   {
+   if(!bIniEntryFind(&pd, &pName, &NameSize, &pArg, &ArgSize, 1))
       goto Exit;  /* nothing left to be read */
-   }
 
    pEntry = (INI_ENTRY *) malloc(sizeof(*pEntry) + NameSize + ArgSize + 2);
    if(!pEntry)

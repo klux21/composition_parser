@@ -241,38 +241,72 @@ int run_zero_copy_tests()
    char * pArg;        /* pointer to the entries parameter string */
    size_t ArgSize;     /* length of parameter string */
 
-   char * pName2;      /* returned pointer to entry name */
-   size_t NameSize2;   /* will be set to the length of the name */
-   char * pArg2;       /* pointer to the entries parameter string */
-   size_t ArgSize2;    /* length of parameter string */
-
    char * pd = (char*) "testname = zero_copy_tests \n"
                        "inttests = { ib=0b1111 io=0o1234567 id=000056789 ix=0xabcd987 } \n"
                        "floattests = { fb=0b11.11e100 fo=0o1234.56e10 fd=1.2345e64 fx=0xabc.defp10 } \n";
    char * ps  = pd;
-   char * pa  = NULL;
+
    char * pe  = NULL;
    int    err = 0;
 
    int64_t t0 =  nsTimeStamp();
    int64_t t1 =  nsTimeStamp();
 
-   uint32_t top_entries = 0;
-   uint32_t sub_entries = 0;
-
    size_t  count;
    double  db  = 0.0;
    int64_t i64 = 0;
 
-   #define found(e, x)  (e) += 1 + (1l << (16 + (x)))
-
    sfprintf(stdout, "%4d: zero_copy parsing tests of\n\"\n%s\n\"\n", __LINE__, pd);
 
-   while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize))
+   while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
    {
-      if(!strmemcmp("testname", pName, NameSize))
+      if(ArgSize && (*pArg == '{'))
+      { /* subblock found */
+         ArgSize = pIniFindBlockEnd (ps) - pArg; /* required for subsequent block size check */
+
+         if(!strmemcmp("inttests", pName, NameSize))
+         {
+            sfprintf(stdout, "%4d: zero_copy: found '%.*s = %.*s'\n", __LINE__, (int) NameSize, pName, (int)  ArgSize, pArg);
+
+            if (ArgSize != 52)
+            {
+               sfprintf(stderr, "%4d: zero_copy: unexpected ArgSize of %zu instead of %u bytes!\n", __LINE__, ArgSize, (int) 53);
+               goto Exit;
+            }
+
+            while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
+            {
+               sfprintf(stdout, "%4d: zero_copy: found    '%.*s = %.*s' (%lld)\n",
+                        __LINE__, (int) NameSize, pName, (int) ArgSize, pArg, (long long) str2i64_r(pArg, &pe, 1, &err));
+            }
+         }
+         else if(!strmemcmp("floattests", pName, NameSize))
+         {
+            sfprintf(stdout, "%4d: zero_copy: found '%.*s = %.*s'\n", __LINE__, (int)  NameSize, pName, (int) ArgSize, pArg);
+
+            if (ArgSize != 63)
+            {
+               sfprintf(stderr, "%4d: zero_copy: unexpected ArgSize of %zu instead of %u bytes!\n", __LINE__, ArgSize, (int)  53);
+               goto Exit;
+            }
+
+            while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
+            {
+               sfprintf(stdout, "%4d: zero_copy: found    '%.*s = %.*s' (%e)\n", __LINE__,
+                        (int) NameSize, pName, (int)  ArgSize, pArg, str2d_r(pArg, &pe, 1, &err));
+            }
+         }
+         else
+         {
+            sfprintf(stderr, "%4d: zero_copy: unexpected subblock '%.*s' found!\n", __LINE__, (int) NameSize, pName);
+            goto Exit;
+         }
+
+         if(*ps == '}')
+             ++ps; /* continue after the end of the subblock */
+      }
+      else if(!strmemcmp("testname", pName, NameSize))
       {
-         found(top_entries, 0);
          sfprintf(stdout, "%4d: zero_copy: found '%.*s = %.*s'\n", __LINE__, (int) NameSize, pName, (int) ArgSize, pArg);
 
          if (strmemcmp ("zero_copy_tests",  pArg, ArgSize))
@@ -281,51 +315,17 @@ int run_zero_copy_tests()
             goto Exit;
          }
       }
-      else if(!strmemcmp("inttests", pName, NameSize))
-      {
-         found(top_entries, 1);
-         sfprintf(stdout, "%4d: zero_copy: found '%.*s = %.*s'\n", __LINE__, (int) NameSize, pName, (int)  ArgSize, pArg);
-
-         if (ArgSize != 52)
-         {
-            sfprintf(stderr, "%4d: zero_copy: unexpected ArgSize of %zu instead of %u bytes!\n", __LINE__, ArgSize, (int) 53);
-            goto Exit;
-         }
-
-         pa = pArg+1;
-         while(bIniEntryFind(&pa, &pName2, &NameSize2, &pArg2, &ArgSize2))
-         {
-            found(sub_entries, 1);
-            sfprintf(stdout, "%4d: zero_copy: found    '%.*s = %.*s' (%lld)\n",
-                     __LINE__, (int) NameSize2, pName2, (int) ArgSize2, pArg2, (long long) str2i64_r(pArg2, &pe, 1, &err));
-    
-         }
-      }
-      else if(!strmemcmp("floattests", pName, NameSize))
-      {
-         found(top_entries, 2);
-         sfprintf(stdout, "%4d: zero_copy: found '%.*s = %.*s'\n", __LINE__, (int)  NameSize, pName, (int) ArgSize, pArg);
-
-         if (ArgSize != 63)
-         {
-            sfprintf(stderr, "%4d: zero_copy: unexpected ArgSize of %zu instead of %u bytes!\n", __LINE__, ArgSize, (int)  53);
-            goto Exit;
-         }
-
-         pa = pArg+1;
-         while(bIniEntryFind(&pa, &pName2, &NameSize2, &pArg2, &ArgSize2))
-         {
-            found(sub_entries, 1);
-            sfprintf(stdout, "%4d: zero_copy: found    '%.*s = %.*s' (%e)\n", __LINE__,
-                     (int) NameSize2, pName2, (int)  ArgSize2, pArg2, str2d_r(pArg2, &pe, 1, &err));
-    
-         }
-      }
       else
       {
          sfprintf(stderr, "%4d: zero_copy: unexpected entry '%.*s = %.*s' found!\n", __LINE__, (int) NameSize, pName, (int) ArgSize, pArg);
          goto Exit;
       }
+   }
+
+   if(ps != (pd + strlen(pd)))
+   {
+      sfprintf(stderr, "\n%4d: basic zero_copy tests failed because the did't stop at buffer end!\n",  __LINE__);
+      goto Exit;
    }
 
    sfprintf(stdout, "\n%4d: basic zero_copy tests succeeded, testing performance ...\n",  __LINE__);
@@ -337,28 +337,37 @@ int run_zero_copy_tests()
    while (count--)
    {
       ps = pd;
-      while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize))
+      while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
       {
-         if(!strmemcmp("testname", pName, NameSize))
+         if(ArgSize && (*pArg == '{'))
+         { /* subblock found */
+            if(!strmemcmp("inttests", pName, NameSize))
+            {
+               while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
+               {
+                  ++i64;
+               }
+            }
+            else if(!strmemcmp("floattests", pName, NameSize))
+            {
+               while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
+               {
+                  ++i64;
+               }
+            }
+            else
+            {
+               sfprintf(stderr, "%4d: zero_copy: unexpected subblock '%.*s' found!\n", __LINE__, (int) NameSize, pName);
+               goto Exit;
+            }
+
+            if(*ps == '}')
+                ++ps; /* continue after the end of the subblock */
+         }
+         else if(!strmemcmp("testname", pName, NameSize))
          {
             if (strmemcmp ("zero_copy_tests",  pArg, ArgSize))
             {
-            }
-         }
-         else if(!strmemcmp("inttests", pName, NameSize))
-         {
-            pa = pArg+1;
-            while(bIniEntryFind(&pa, &pName2, &NameSize2, &pArg2, &ArgSize2))
-            {
-               ++i64;
-            }
-         }
-         else if(!strmemcmp("floattests", pName, NameSize))
-         {
-            pa = pArg+1;
-            while(bIniEntryFind(&pa, &pName2, &NameSize2, &pArg2, &ArgSize2))
-            {
-               ++i64;
             }
          }
          else
@@ -381,42 +390,51 @@ int run_zero_copy_tests()
    while (count--)
    {
       ps = pd;
-      while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize))
+      while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
       {
-         if(!strmemcmp("testname", pName, NameSize))
+         if(ArgSize && (*pArg == '{'))
+         { /* subblock found */
+            if(!strmemcmp("inttests", pName, NameSize))
+            {
+               while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
+               {
+                  i64 = str2i64_r(pArg, &pe, 1, &err);
+                  if(err || ((ptrdiff_t) ArgSize != (pe - pArg)))
+                  {
+                     sfprintf(stdout, "%4d: zero_copy: failed to read '%.*s = %.*s'! (read='%.*s', ret=%lld, err=%d (%s))\n",
+                              __LINE__, (int) NameSize, pName, (int) ArgSize, pArg,
+                              (int) (pe - pArg), pArg, (long long)i64, err, strerror(err));
+                     goto Exit;
+                  }
+               }
+            }
+            else if(!strmemcmp("floattests", pName, NameSize))
+            {
+               while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
+               {
+                  db = str2d_r(pArg, &pe, 1, &err);
+                  if(err || ((ptrdiff_t) ArgSize != (pe - pArg)))
+                  {
+                     sfprintf(stdout, "%4d: zero_copy: failed to read '%.*s = %.*s'! (read='%.*s', ret=%e, err=%d, %s)\n",
+                              __LINE__, (int) NameSize, pName, (int) ArgSize, pArg,
+                              (int) (pe - pArg), pArg, db, err, strerror(err));
+                     goto Exit;
+                  }
+               }
+            }
+            else
+            {
+               sfprintf(stderr, "%4d: zero_copy: unexpected subblock '%.*s' found!\n", __LINE__, (int) NameSize, pName);
+               goto Exit;
+            }
+
+            if(*ps == '}')
+                ++ps; /* continue after the end of the subblock */
+         }
+         else if(!strmemcmp("testname", pName, NameSize))
          {
             if (strmemcmp ("zero_copy_tests",  pArg, ArgSize))
             {
-            }
-         }
-         else if(!strmemcmp("inttests", pName, NameSize))
-         {
-            pa = pArg + 1;
-            while(bIniEntryFind(&pa, &pName2, &NameSize2, &pArg2, &ArgSize2))
-            {
-               i64 = str2i64_r(pArg2, &pe, 1, &err);
-               if(err || ((ptrdiff_t) ArgSize2 != (pe - pArg2)))
-               {
-                  sfprintf(stdout, "%4d: zero_copy: failed to read '%.*s = %.*s'! (read='%.*s', ret=%lld, err=%d (%s))\n",
-                           __LINE__, (int) NameSize2, pName2, (int) ArgSize2, pArg2,
-                           (int) (pe - pArg2), pArg2, (long long)i64, err, strerror(err));
-                  goto Exit;
-               }
-            }
-         }
-         else if(!strmemcmp("floattests", pName, NameSize))
-         {
-            pa = pArg + 1;
-            while(bIniEntryFind(&pa, &pName2, &NameSize2, &pArg2, &ArgSize2))
-            {
-               db = str2d_r(pArg2, &pe, 1, &err);
-               if(err || ((ptrdiff_t) ArgSize2 != (pe - pArg2)))
-               {
-                  sfprintf(stdout, "%4d: zero_copy: failed to read '%.*s = %.*s'! (read='%.*s', ret=%e, err=%d, %s)\n",
-                           __LINE__, (int) NameSize2, pName2, (int) ArgSize2, pArg2,
-                           (int) (pe - pArg2), pArg2, db, err, strerror(err));
-                  goto Exit;
-               }
             }
          }
          else
@@ -442,10 +460,9 @@ Exit:;
 
 
 
-/* Here we iterate the top level entries. bIniEntryFind returns the pointers to the raw data in memory.
-   In case of data composition subentries the data contains the enclosing curly braces.
-   If the closing brace is missing and the document is terminated by a '\0' character the terminating '\0'
-   is returned instead of the closing brace. */
+/* Here we iterate the top level entries. bIniEntryRead returns a copy of the optionally unescaped string data.
+   In case of data composition subentries the data does not include the enclosing curly braces nor any other
+   other block terminating character. */
 
 int run_string_copy_tests()
 {
@@ -700,7 +717,7 @@ int run_file_iteration_tests()
    /* Let's iterate the file content */
    while (*ps)
    {
-      while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize))
+      while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
       {
          if(ArgSize && (*pArg == '{'))
          {
@@ -710,21 +727,19 @@ int run_file_iteration_tests()
             ++Indent;
          }
          else
-         {
+         { /* Removing quotes or replacing escapes always shortens a string.
+              For this we test whether the length changes before letting lIniGetStringValue do anything.
+              This way we can work zero-copy and remove quotes and escapes in place. */
+
+            if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
+               NameSize = lIniGetStringValue(pName, pName, NameSize) - 1;
+
+            if(ArgSize != lIniGetStringValue(NULL, pArg, ArgSize) - 1)
+               ArgSize = lIniGetStringValue(pArg, pArg, ArgSize) - 1;
+
             sfprintf(stdout, "%4d: found entry    %*s%.*s%s%.*s\n",
                      __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
                      ArgSize ? " = " : "", (int) ArgSize, pArg);
-
-            if((ArgSize && (pArg[ArgSize] <= 32)) || (!ArgSize && ((pName[NameSize] <= 32) || (pName[NameSize] == '='))))
-            {
-               if((NameSize != lIniGetStringValue(pName, pName, NameSize) - 1) ||
-                  (ArgSize != lIniGetStringValue(pArg, pArg, ArgSize) - 1)) 
-               {
-                  sfprintf(stdout, "%4d:  unescaped:   %*s\"%.*s%s%.*s\"\n",
-                           __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
-                           ArgSize ? " = " : "", (int) ArgSize, pArg);
-               }
-            }
          }
       }
 

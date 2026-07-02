@@ -119,11 +119,20 @@ int bIniEntryRead(char **      ppData,     /* pointer to INI file data */
    Name or argument embracing quotes or braces will be not removed.
 \* ------------------------------------------------------------------------- */
 
-int bIniEntryFind(char **  ppData,    /* section data pointer */
-                  char **  ppName,    /* returned pointer to entry name */
-                  size_t * pNameSize, /* will be set to the length of the name */
-                  char **  ppArg,     /* pointer to the entries parameter string */
-                  size_t * pArgSize); /* length of parameter string */
+int bIniEntryFind(char **  ppData,         /* section data pointer */
+                  char **  ppName,         /* returned pointer to entry name */
+                  size_t * pNameSize,      /* will be set to the length of the name */
+                  char **  ppArg,          /* pointer to the entries parameter string */
+                  size_t * pArgSize,       /* length of parameter string */
+                  int      bFindBlockEnd); /* whether to find the end of a block or just the begin */
+
+/* ------------------------------------------------------------------------- *\
+   pFindBlockEnd returns a pointer to the first character after the block
+   that pb points to. pb must not point to the inner of a quoted string,
+   a comment or a header.
+\* ------------------------------------------------------------------------- */
+
+char * pIniFindBlockEnd (const char * pb);
 
 /* ------------------------------------------------------------------------- *\
    lIniGetStringValue converts an unterminated C style escaped string from
