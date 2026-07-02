@@ -456,7 +456,9 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
       goto Exit; /* invalid argument pointer */
 
    /* let's find begin of next entry */
-   pd = pSkipBlanksAndComments(*ppData);
+   pd = *ppData;
+   if(IS_INI_BLANK_OR_COMMENT(*pd))
+      pd = pSkipBlanksAndComments(pd);
 
    if(IS_INI_SECT_END(*pd)) /* [ ] } '\0' */
       goto Exit; /* end of section found */
@@ -491,11 +493,14 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
    NameSize = (size_t)(pd - pName); /* calculate name length */
 
    /* end of name, find argument */
-   pd = pSkipBlanksAndComments(pd);
+
+   if(IS_INI_BLANK_OR_COMMENT(*pd))
+      pd = pSkipBlanksAndComments(pd);
 
    if(*pd == '=')
    {/* argument string found */
-      pd = pSkipBlanksAndComments(pd + 1); /* skip '=' and subsequent blanks */
+      if(IS_INI_BLANK_OR_COMMENT(*(++pd)))
+         pd = pSkipBlanksAndComments(pd); /* skip '=' and subsequent blanks */
 
       if (*pd == '{')
       { /* subblock found */
