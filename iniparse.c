@@ -108,7 +108,7 @@ static const uint8_t ini_char_type[256] = { 0x08,0x00,0x00,0x00, 0x00,0x00,0x00,
 #define IS_INI_BLANK(x)              (ini_char_type[(uint8_t) (x)] & 0x02) /* white spaces */
 #define IS_INI_COMMENT(x)            (ini_char_type[(uint8_t) (x)] & 0x04) /* comment start markers ; #   */
 #define IS_INI_SECT_END(x)           (ini_char_type[(uint8_t) (x)] & 0x08) /* section end indicators [ ] } '\0' */
-#define IS_INI_QUOTE                 (ini_char_type[(uint8_t) (x)] & 0x10) /* backslash \ or quote ' " */
+#define IS_INI_QUOTE(x)              (ini_char_type[(uint8_t) (x)] & 0x10) /* backslash \ or quote ' " */
 
 #define IS_INI_SPECIAL(x)            (ini_char_type[(uint8_t) (x)] & 0x0f) /* terminates unquoted strings '\0',' ','\t','\n','\f','\v','\r','#',';','[',']','{','}','=' */
 #define IS_INI_BLANK_OR_COMMENT(x)   (ini_char_type[(uint8_t) (x)] & 0x06) /* whitespace or start of a comment */
