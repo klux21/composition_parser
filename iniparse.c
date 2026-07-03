@@ -356,7 +356,7 @@ char * pIniFindBlockEnd (const char * pb)
          if(! *(++pb))
             goto Exit; /* end of document */
       }
-      else if((*pb == '\'')  || (*pb == '\"'))
+      else if((*pb == '\"') || (*pb == '\''))
       {/* ignore  characters inside of quoted strings */
          char c = *pb;
 
@@ -394,7 +394,7 @@ char * pIniFindBlockEnd (const char * pb)
                if(!*(++pb))
                   goto Exit; /* unexpected end of document */
             }
-            else if((*pb == '\'')  || (*pb == '\"'))
+            else if((*pb == '\"') || (*pb == '\''))
             {/* a part of the section name is quoted and must be ignored */
                char c = *pb;
 
@@ -473,7 +473,7 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
          if(!*(++pd)) /* ignore c style characters */
             break;
       }
-      else if((*pd == '\'')  || (*pd == '\"'))
+      else if((*pd == '\"') || (*pd == '\''))
       {/* entry name given in quotes */
          c = *pd;
 
@@ -532,7 +532,7 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
                if(!*(++pd)) /* ignore c style characters */
                   break;
             }
-            else if((*pd == '\'')  || (*pd == '\"'))
+            else if((*pd == '\"') || (*pd == '\''))
             {/* entry name given in quotes */
                c = *pd;
 
@@ -663,7 +663,7 @@ char * pIniFindNextSection(char **  ppData,           /* INI file data buffer */
             goto Exit; /* unexpected end of document */
          }
       }
-      else if((*pd == '\'')  || (*pd == '\"'))
+      else if((*pd == '\"') || (*pd == '\''))
       {/* a part of the section name was given in quotes */
          char c = *pd;
 
@@ -765,7 +765,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
                ++ps;
                quote = '\0';
             }
-            else if (!quote && ((*ps == '\'') || (*ps == '\"')))
+            else if (!quote && ((*ps == '\"') || (*ps == '\'')))
             {/* begin of quotation found, remember it and ignore the character */
                quote = *ps++;
             }
@@ -836,7 +836,7 @@ size_t lIniGetStringValue(char *       pDst,   /* pointer to destination buffer 
             get_C_char(&ps); /* get C style char */
             ++pd;
          }
-         else if ((*ps == '\'') || (*ps == '\"'))
+         else if ((*ps == '\"') || (*ps == '\''))
          { /* remove quotes */
             if(q)
             {/* trailing quote? */
@@ -873,7 +873,7 @@ size_t lIniGetStringValue(char *       pDst,   /* pointer to destination buffer 
          {
             *pd++ = get_C_char(&ps); /* get C style char */
          }
-         else if ((*ps == '\'') || (*ps == '\"'))
+         else if ((*ps == '\"') || (*ps == '\''))
          { /* remove quotes */
             if(q)
             {/* trailing quote? */
@@ -933,7 +933,7 @@ size_t lIniRemoveQuotes(char *       pDst,   /* pointer to destination buffer */
    {
       while(*ps && SrcLen--)
       {
-         if ((*ps == '\'') || (*ps == '\"'))
+         if ((*ps == '\"') || (*ps == '\''))
          { /* remove quotes */
             if(q)
             {/* trailing quote? */
@@ -965,7 +965,7 @@ size_t lIniRemoveQuotes(char *       pDst,   /* pointer to destination buffer */
    {
       while(*ps && SrcLen--)
       {
-         if ((*ps == '\'') || (*ps == '\"'))
+         if ((*ps == '\"') || (*ps == '\''))
          { /* remove quotes */
             if(q)
             {/* trailing quote? */
