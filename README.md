@@ -15,9 +15,7 @@ https://github.com/klux21/composition
 
 However, this implementation provides a first parser for the composition format data and the
 configuration files that are relying on that format. Of course this implementation is a very
-different thing than format itself and it doesn't provide a DOM structure nor any editing
-capabilities for configuration files.
-
+different thing than the format itself.
 Structured data compositions have a very minimal syntax; a document consists of three
 types of elements:
 
@@ -98,7 +96,7 @@ server = {
 
 That doesn't match XML, JSON, INI or TOML but is a very lightweight, powerful and well structured
 configuration format. However, in case of more complex configurations sections may help to improve
-the readability. 
+the readability.
 
 For a platform independent parsing of numbers and ensuring the support the binary and octal
 prefixes 0b and 0o for integers and doubles the tests are using the free open source project
