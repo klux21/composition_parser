@@ -7,8 +7,9 @@
 
 This C project is the first implementation of a data composition format parser for parsing
 standard-conforming configurations and communication data. A data composition parser can
-read most INI files as well but the format is hierarchical and a much more powerful thing
-than INI. The format itself is neither limited to C nor this implementation of course.
+read most INI files as well but the format itself is hierarchical and a much more flexible
+and powerful thing than INI. Beside of that there exist a specification of that format which
+is neither limited to C nor this implementation that is relying on that of course.
 The related standard draft of the format specification can be found at
 
 https://github.com/klux21/composition
