@@ -2,20 +2,20 @@
   <img src="composition.svg" width="300">
 </p>
 
-<h2>The first C parser for the tiny but mighty and user-friendly data composition format</h2>
+<h2>A first C parser for the tiny but mighty and very flexible Data Composition Format</h2>
 
 
 This C project is the first implementation of a data composition format parser for parsing
 standard-conforming configurations and communication data. A data composition parser can
-read most INI files as well but the format is hierarchical and a much more powerful thing.
-The format itself isn't limited to C or this implementation of course. The standard draft
-of the format specification can be found at
+read most INI files as well but the format is hierarchical and a much more powerful thing
+than INI. The format itself is neither limited to C nor this implementation of course.
+The related standard draft of the format specification can be found at
 
 https://github.com/klux21/composition
 
-However, this implementation provides a first parser for the composition format data and the
-configuration files that are relying on that format. Of course this implementation is a very
-different thing than the format itself.
+This implementation provides a first C parser for data and configuration files that are
+relying on that format.
+
 Structured data compositions have a very minimal syntax; a document consists of three
 types of elements:
 
