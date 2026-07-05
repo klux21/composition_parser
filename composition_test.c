@@ -721,8 +721,8 @@ int run_file_iteration_tests()
       {
          if(ArgSize && (*pArg == '{'))
          {
-            sfprintf(stdout, "\n%4d: found block    %*s%.*s%s{ #* %zu bytes *#\n",
-                     __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " = " : "", ArgSize);
+            sfprintf(stdout, "\n%4d: found block    %*s%.*s%s{ #* %tu bytes *#\n",
+                     __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg + 2);
             ps = pArg + 1;
             ++Indent;
          }
