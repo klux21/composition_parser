@@ -866,7 +866,7 @@ int run_file_iteration_tests()
 #else
             /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
             _sfprintf(stdout, "\n%4d: found block    %*s%.*v%s{ #* %zu bytes *#\n",
-                      __LINE__, (int)(Indent*3),"", (int) NameSize, pvc_unescape, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg + 2);
+                      __LINE__, (int)(Indent*3),"", (int) NameSize, pvc_unescape, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg);
 #endif
             ps = pArg + 1;
             ++Indent;
