@@ -871,7 +871,7 @@ int run_file_iteration_tests()
          {
 #ifndef SFPRINTF_H
             if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
-               NameSize = lIniGetStringValue(pName, pName, NameSize) - 1;
+               NameSize = lIniGetStringValue(pName, pName, NameSize) - 1; /* -> this terminates and invalidates our source buffer */
 
             sfprintf(stdout, "\n%4d: found block    %*s%.*s%s{ #* %zu bytes *#\n",
                      __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg + 2);
@@ -891,10 +891,10 @@ int run_file_iteration_tests()
                This way we can work zero-copy and remove quotes and escapes in place. */
 
             if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
-               NameSize = lIniGetStringValue(pName, pName, NameSize) - 1;
+               NameSize = lIniGetStringValue(pName, pName, NameSize) - 1; /* -> this terminates and invalidates our source buffer */
 
             if(ArgSize != lIniGetStringValue(NULL, pArg, ArgSize) - 1)
-               ArgSize = lIniGetStringValue(pArg, pArg, ArgSize) - 1;
+               ArgSize = lIniGetStringValue(pArg, pArg, ArgSize) - 1; /* -> this terminates and invalidates our source buffer */
 
             sfprintf(stdout, "%4d: found entry    %*s%.*s%s%.*s\n",
                      __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
@@ -912,7 +912,7 @@ int run_file_iteration_tests()
       {
 #ifndef SFPRINTF_H
          if(SectionNameSize != lIniGetStringValue(NULL, pSectionName, SectionNameSize) - 1)
-            SectionNameSize = lIniGetStringValue(pSectionName, pSectionName, SectionNameSize) - 1;
+            SectionNameSize = lIniGetStringValue(pSectionName, pSectionName, SectionNameSize) - 1; /* -> this terminates and invalidates our source buffer */
 
          sfprintf(stdout, "\n%4d: found section  %*s[%.*s]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, pSectionName ? pSectionName : "");
 #else
