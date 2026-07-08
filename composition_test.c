@@ -874,7 +874,7 @@ int run_file_iteration_tests()
 #else
             /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
             _sfprintf(stdout, "\n%4d: found block    %*s%.*v%s{ #* %zu bytes *#\n",
-                      __LINE__, (int)(Indent*3),"", (int) NameSize, pvc_unescape, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg);
+                      __LINE__, (int)(Indent*3),"", (int) NameSize, &pvc_unescape, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg);
 #endif
             ps = pArg + 1;
             ++Indent;
@@ -898,8 +898,8 @@ int run_file_iteration_tests()
 #else
             /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
             _sfprintf(stdout, "%4d: found entry    %*s%.*v%s%.*v\n",
-                      __LINE__, (int)(Indent*3), "", (int) NameSize, pvc_unescape, pName ? pName : "\"\"",
-                     ArgSize ? " = " : "", (int) ArgSize, pvc_unescape, pArg);
+                      __LINE__, (int)(Indent*3), "", (int) NameSize, &pvc_unescape, pName ? pName : "\"\"",
+                     ArgSize ? " = " : "", (int) ArgSize, &pvc_unescape, pArg);
 #endif
          }
       }
@@ -913,7 +913,7 @@ int run_file_iteration_tests()
          sfprintf(stdout, "\n%4d: found section  %*s[%.*s]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, pSectionName ? pSectionName : "");
 #else
          /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
-         _sfprintf(stdout, "\n%4d: found section  %*s[%.*v]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, pvc_unescape, pSectionName ? pSectionName : "");
+         _sfprintf(stdout, "\n%4d: found section  %*s[%.*v]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, &pvc_unescape, pSectionName ? pSectionName : "");
 #endif
       }
       else
