@@ -683,6 +683,142 @@ Exit:;
 }/* run_string_copy_tests() */
 
 
+#ifdef SFPRINTF_H
+/* ------------------------------------------------------------------------- *\
+   pvc_unescape is a helper for printing unquoted and unescaped strings
+   with the help of %v option of callbackprintf using sfprintf.
+\* ------------------------------------------------------------------------- */
+size_t pvc_unescape (void *            pUserData,
+                     PRINTF_CALLBACK * pCB,
+                     void *            pvdata,
+                     size_t            precision,
+                     size_t            minimum_width,
+                     uint8_t           left_justified,
+                     uint8_t           prefixing)
+{
+   size_t       sz         = 0;
+   size_t       max_length = precision; /* pvc_unescape handles the data like %.*s */
+   const char * pv         = (const char *) pvdata;
+   const char * pb         = pv;
+   const char * ps         = pv;
+   char         q          = '\0'; /* enclosing quote if within a string */
+   char         c;
+
+   if(!left_justified && minimum_width)
+   {
+      while(max_length-- && *ps)
+      {
+         if(*ps == '\\')
+         {  /* escape sequence found */
+            if(pb != ps)
+               sz += ps - pb;
+
+            pb = ps;
+            get_C_char(&ps);
+
+            if(max_length <= (size_t)(ps - pb - 1)) /* -1 because max_length was decremented already */
+               break;
+
+            max_length -= (size_t)(ps - pb - 1);
+            pb = ps;
+         }
+         else if ((*ps == '\"') || (*ps == '\''))
+         { /* remove quotes */
+            if(q)
+            {/* trailing quote? */
+               if(q == *ps)
+               {
+                  if(pb != ps)
+                     sz += ps - pb;
+
+                  q = '\0';
+                  pb = ++ps;
+               }
+               else
+               { /* it's the other type of quote */
+                  ++ps;
+               }
+            }
+            else
+            {/* leading quote found */
+               if(pb != ps)
+                  sz += ps - pb;
+
+               q = *ps++;
+               pb = ps;
+            }
+         }
+         else
+             ++ps;
+      }
+
+      if(sz < minimum_width)
+         sz = cbk_print_string(pUserData, pCB, "", 0, minimum_width - sz, 0); /* fill in the missing blanks and remember that length  */
+      else
+         sz = 0; /* no real output done until here */
+
+      max_length = precision;
+      pb = pv;
+      ps = pv;
+   }
+
+   while(max_length-- && *ps)
+   {
+      if(*ps == '\\')
+      {  /* escape sequence found */
+         if(pb != ps)
+            sz += cbk_print_string(pUserData, pCB, pb,(size_t) (ps - pb), 0, 0);
+
+         pb = ps;
+         c = get_C_char(&ps);
+
+         sz += cbk_print_string(pUserData, pCB, &c, 1, 0, 0);
+
+         if(max_length <= (size_t)(ps - pb - 1)) /* -1 because max_length was decremented already */
+         {
+            pb = ps;
+            break;
+         }
+         max_length -= (size_t)(ps - pb - 1);
+         pb = ps;
+      }
+      else if ((*ps == '\"') || (*ps == '\''))
+      { /* remove quotes */
+         if(q)
+         {/* trailing quote? */
+            if(q == *ps)
+            {
+               if(pb != ps)
+                  sz += cbk_print_string(pUserData, pCB, pb,(size_t) (ps - pb), 0, 0);
+
+               q = '\0';
+               pb = ++ps;
+            }
+            else
+            { /* it's the other type of quote */
+               ++ps;
+            }
+         }
+         else
+         {/* leading quote found */
+            if(pb != ps)
+               sz += cbk_print_string(pUserData, pCB, pb,(size_t) (ps - pb), 0, 0);
+
+            q = *ps;
+            pb = ++ps;
+         }
+      }
+      else
+          ++ps;
+   }
+
+   if(pb != ps)
+      sz += cbk_print_string(pUserData, pCB, pb,(size_t) (ps - pb), 0, 0);
+
+   return (sz);
+} /* size_t pvc_unescape (...) */
+#endif
+
 
 /* ------------------------------------------------------------------------- *\
    The file tests are reading and iterating a test file
@@ -721,15 +857,26 @@ int run_file_iteration_tests()
       {
          if(ArgSize && (*pArg == '{'))
          {
-            sfprintf(stdout, "\n%4d: found block    %*s%.*s%s{ #* %tu bytes *#\n",
-                     __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg + 2);
+#ifndef SFPRINTF_H
+            if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
+               NameSize = lIniGetStringValue(pName, pName, NameSize) - 1;
+
+            sfprintf(stdout, "\n%4d: found block    %*s%.*s%s{ #* %zu bytes *#\n",
+                     __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " = " : "", ArgSize);
+#else
+            /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
+            _sfprintf(stdout, "\n%4d: found block    %*s%.*v%s{ #* %zu bytes *#\n",
+                      __LINE__, (int)(Indent*3),"", (int) NameSize, pvc_unescape, pName, NameSize ? " = " : "", ArgSize);
+#endif
             ps = pArg + 1;
             ++Indent;
          }
          else
-         { /* Removing quotes or replacing escapes always shortens a string.
-              For this we test whether the length changes before letting lIniGetStringValue do anything.
-              This way we can work zero-copy and remove quotes and escapes in place. */
+         {
+#ifndef SFPRINTF_H
+            /* Removing quotes or replacing escapes always shortens a string.
+               For this we test whether the length changes before letting lIniGetStringValue terminating the string.
+               This way we can work zero-copy and remove quotes and escapes in place. */
 
             if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
                NameSize = lIniGetStringValue(pName, pName, NameSize) - 1;
@@ -740,12 +887,26 @@ int run_file_iteration_tests()
             sfprintf(stdout, "%4d: found entry    %*s%.*s%s%.*s\n",
                      __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
                      ArgSize ? " = " : "", (int) ArgSize, pArg);
+#else
+            /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
+            _sfprintf(stdout, "%4d: found entry    %*s%.*v%s%.*v\n",
+                      __LINE__, (int)(Indent*3), "", (int) NameSize, pvc_unescape, pName ? pName : "\"\"",
+                     ArgSize ? " = " : "", (int) ArgSize, pvc_unescape, pArg);
+#endif
          }
       }
 
       if(pIniFindNextSection(&ps, &pSectionName, &SectionNameSize))
       {
+#ifndef SFPRINTF_H
+         if(SectionNameSize != lIniGetStringValue(NULL, pSectionName, SectionNameSize) - 1)
+            SectionNameSize = lIniGetStringValue(pSectionName, pSectionName, SectionNameSize) - 1;
+
          sfprintf(stdout, "\n%4d: found section  %*s[%.*s]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, pSectionName ? pSectionName : "");
+#else
+         /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
+         _sfprintf(stdout, "\n%4d: found section  %*s[%.*v]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, pvc_unescape, pSectionName ? pSectionName : "");
+#endif
       }
       else
       {

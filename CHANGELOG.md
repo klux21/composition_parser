@@ -1,5 +1,10 @@
 # Changelog of the Data Composition parser
 
+## composition_parser_1.1.2 / 2026-07-08
+ - get_C_char is nonstatic now and part of the API
+ - the tests are using the %v option of callback_print with pvc_unescape for a sample of an
+   unquoted and unescaped output while leaving the file buffer unchanged for an subsequent second iteration.
+
 ## composition_parser_1.1.1 / 2026-07-03
  - Additional argument bFindBlockEnd for bIniEntryFind added that specifies whether the end of a block
    should be searched or whether the start of the block should be returned only.
