@@ -156,11 +156,15 @@ int strmemcmp(const char * pStr, const void * pBuffer, size_t BufferSize)
 
 /* ------------------------------------------------------------------------- *\
    Extracts a C style character from a string and moves the string pointer to
-   the end of the C style character definition. It doesn't moves the pointer
-   behind the terminating '\0' of the string.
+   the end of the C style character definition. It does not move the pointer
+   behind a string terminating '\0'.
+   A '\u' is ignored and the backslash returned as the backslash for keeping
+   '\u'. In case of other unknown sequences like '\#', '\[', '\]', '\{', '\}',
+   '\*', '\;' or '\ ' the backslash is will be skipped and the subsequent
+   character returned only.
 \* ------------------------------------------------------------------------- */
 
-static char get_C_char(const char ** ppSrc)
+char get_C_char(const char ** ppSrc)
 {
    const uint8_t * ps;
    uint8_t c = 0;
@@ -656,7 +660,7 @@ char * pIniFindNextSection(char **  ppData,           /* INI file data buffer */
    {
       if(*pd == '\\')
       { /* we must ignore nonzero characters after a backslash */
-         if(!*(++pd)) 
+         if(!*(++pd))
          { /* unexpected end of document */
             *ppData = pd;
             pd = NULL;

@@ -167,6 +167,18 @@ size_t lIniRemoveQuotes(char *       pDst,    /* pointer to destination buffer *
 
 int strmemcmp(const char * pStr, const void * pBuffer, size_t BufferSize);
 
+/* ------------------------------------------------------------------------- *\
+   Extracts a C style character from a string and moves the string pointer to
+   the end of the C style character definition. It does not move the pointer
+   behind a string terminating '\0'.
+   A '\u' is ignored and the backslash returned as the backslash for keeping
+   '\u'. In case of other unknown sequences like '\#', '\[', '\]', '\{', '\}',
+   '\*', '\;' or '\ ' the backslash is will be skipped and the subsequent
+   character returned only.
+\* ------------------------------------------------------------------------- */
+
+char get_C_char(const char ** ppSrc);
+
 #ifdef __cplusplus
 }/* extern "C" */
 #endif
