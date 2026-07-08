@@ -714,6 +714,10 @@ size_t pvc_unescape (void *            pUserData,
                sz += ps - pb;
 
             pb = ps;
+
+            if(!max_length)
+                break;
+
             get_C_char(&ps);
 
             if(max_length <= (size_t)(ps - pb - 1)) /* -1 because max_length was decremented already */
@@ -770,6 +774,10 @@ size_t pvc_unescape (void *            pUserData,
             sz += cbk_print_string(pUserData, pCB, pb,(size_t) (ps - pb), 0, 0);
 
          pb = ps;
+
+         if(!max_length)
+            break;
+
          c = get_C_char(&ps);
 
          sz += cbk_print_string(pUserData, pCB, &c, 1, 0, 0);
