@@ -237,7 +237,7 @@ int64_t nsTimeStamp()
   by a '\0' character then the terminating '\0' is returned instead of the
   closing brace.
 \*------------------------------------------------------------------------- */
- 
+
 int run_zero_copy_tests()
 {
    int    iRet = 0;
@@ -709,7 +709,7 @@ Exit:;
    &pvc_unescape and a pointer to the data that it prints as arguments.
    However the zero-copy strings are unterminated, so the data length must
    be provided too and the precision argument is used for that.
-   Some simple usage samples of that 
+   Some simple usage samples of that
 
    _sfprintf(stderr, "%.*v", (int) NameSize, pvc_unescape, pName);
    _sfdprintf(fileno(stderr), "%-8.*v", (int) NameSize, pvc_unescape, pName);
