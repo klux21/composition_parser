@@ -161,14 +161,15 @@ static UINT SetWindowsConsoleOutputCP(UINT CP)
 
 #if defined (_WIN32) || defined (__CYGWIN__)
 
-static void (WINAPI * vGetSystemTimePreciseAsFileTime)(LPFILETIME lpSystemTimeAsFileTime);
-static HMODULE hmKernel32Dll = (HMODULE) -1;
-
 /* ------------------------------------------------------------------------- *\
    nsTimeStamp() returns the Unix time in nanoseconds since 01/01/1970
 \* ------------------------------------------------------------------------- */
+
 int64_t nsTimeStamp()
 {
+   static void (WINAPI * vGetSystemTimePreciseAsFileTime)(LPFILETIME lpSystemTimeAsFileTime);
+   static HMODULE hmKernel32Dll = (HMODULE) -1;
+
    int64_t iRet;
    FILETIME CurrentTime;
 
@@ -226,12 +227,17 @@ int64_t nsTimeStamp()
 
 
 
-
-/* Here we iterate the top level entries. bIniEntryFind returns the pointers to the raw data in memory.
-   In case of data composition subentries the data contains the enclosing curly braces.
-   If the closing brace is missing and the document is terminated by a '\0' character the terminating '\0'
-   is returned instead of the closing brace. */
-
+/* ------------------------------------------------------------------------- *\
+  Here we iterate the top level entries. bIniEntryFind returns the pointers
+  to the raw data in memory. In case of data composition type subentries
+  the data contains the opening curly braces of the block only is the
+  option bFindBlockEnd is set to 0 otherwise the block termination is
+  searched and pArg contains the whole block including the terminating
+  character. If the closing brace is missing and the document is terminated
+  by a '\0' character then the terminating '\0' is returned instead of the
+  closing brace.
+\*------------------------------------------------------------------------- */
+ 
 int run_zero_copy_tests()
 {
    int    iRet = 0;
@@ -459,10 +465,13 @@ Exit:;
 
 
 
-
-/* Here we iterate the top level entries. bIniEntryRead returns a copy of the optionally unescaped string data.
-   In case of data composition subentries the data does not include the enclosing curly braces nor any other
-   other block terminating character. */
+/* ------------------------------------------------------------------------- *\
+   Here we iterate the top level entries using bIniEntryRead.
+   bIniEntryRead returns a copy of the optionally unescaped string data or
+   the raw content of a block if the entries argument is a block.
+   In that case the data does not include the enclosing curly braces nor any
+   other block terminating character except a string terminatin '\0'.
+\* ------------------------------------------------------------------------- */
 
 int run_string_copy_tests()
 {
@@ -494,7 +503,7 @@ int run_string_copy_tests()
 
    sfprintf(stdout, "%4d: string_copy parsing tests of\n\"\n%s\n\"\n", __LINE__, pd);
 
-   while(bIniEntryRead(&ps, &pEntry, 0 /* bUnescape */))
+   while(bIniEntryRead(&ps, &pEntry, 0 /* bUnescape can be set to 0 or 1 but we don't use any escapes here */))
    {
       if(!strmemcmp("testname", pEntry->pName, pEntry->NameSize))
       {
@@ -685,9 +694,28 @@ Exit:;
 
 #ifdef SFPRINTF_H
 /* ------------------------------------------------------------------------- *\
-   pvc_unescape is a helper for printing unquoted and unescaped strings
-   with the help of %v option of callbackprintf using sfprintf.
+   pvc_unescape is a helper for printing unquoted and unescaped strings with
+   the help of a %.*v option of callback_printf that is used below.
+
+   That way we don't need to modify the buffer using an inplace unescaping
+   nor to make copy of the data using a strndup for replacing the escapes
+   sequences.
+
+   This function can be used for printing the unescaped and unquoted
+   configuration entries to a FILE pointer, a file descriptor or a text buffer
+   in a fprintf or snprintf like way and even do that using a minimum width
+   and left justified or right justified output.
+   A %v in the format string expects a callback function pointer like
+   &pvc_unescape and a pointer to the data that it prints as arguments.
+   However the zero-copy strings are unterminated, so the data length must
+   be provided too and the precision argument is used for that.
+   Some simple usage samples of that 
+
+   _sfprintf(stderr, "%.*v", (int) NameSize, pvc_unescape, pName);
+   _sfdprintf(fileno(stderr), "%-8.*v", (int) NameSize, pvc_unescape, pName);
+   _ssnprintf(buffer, 16, "%15.*v", (int) NameSize, pvc_unescape, pName);
 \* ------------------------------------------------------------------------- */
+
 size_t pvc_unescape (void *            pUserData,
                      PRINTF_CALLBACK * pCB,
                      void *            pvdata,
