@@ -1,5 +1,9 @@
 # Changelog of the Data Composition parser
 
+## composition_parser_1.1.3 / 2026-07-10
+ - output of file iteration test and comment of composition_test.c improved
+ - unnamed entries in composition_test.ini added
+
 ## composition_parser_1.1.2 / 2026-07-08
  - get_C_char is nonstatic now and part of the API
  - the tests are using the %v option of callback_print with pvc_unescape for a sample of an
@@ -12,8 +16,8 @@
 
 ## composition_parser_1.1.0 / 2026-07-02
  - pIniFindNextSection takes the address of the iterating character pointer as it's first argument now.
-   This makes the code for iterating the file sections a lot easier now. 
- - Windows console output of the test project supports UTF-8 now.  
+   This makes the code for iterating the file sections a lot easier now.
+ - Windows console output of the test project supports UTF-8 now.
 
 ## composition_parser_1.0.1 / 2026-06-29
 
