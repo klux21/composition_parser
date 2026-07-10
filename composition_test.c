@@ -931,8 +931,8 @@ int run_file_iteration_tests()
                      ArgSize ? " = " : "", (int) ArgSize, pArg);
 #else
             /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
-            _sfprintf(stdout, "%4d: found entry    %*s%.*v%s%.*v\n",
-                      __LINE__, (int)(Indent*3), "", (int) NameSize, &pvc_unescape, pName ? pName : "\"\"",
+            _sfprintf(stdout, "%4d: %s entry    %*s%.*v%s%.*v\n",
+                      __LINE__, NameSize ? "named" : "wrong", (int)(Indent*3), "", (int) NameSize, &pvc_unescape, pName ? pName : "\"\"",
                       ArgSize ? " = " : "", (int) ArgSize, &pvc_unescape, pArg);
 #endif
          }
