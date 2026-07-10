@@ -926,8 +926,8 @@ int run_file_iteration_tests()
             if(ArgSize != lIniGetStringValue(NULL, pArg, ArgSize) - 1)
                ArgSize = lIniGetStringValue(pArg, pArg, ArgSize) - 1; /* -> this terminates and invalidates our source buffer */
 
-            sfprintf(stdout, "%4d: found entry    %*s%.*s%s%.*s\n",
-                     __LINE__, (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
+            sfprintf(stdout, "%4d: %s entry    %*s%.*s%s%.*s\n",
+                     __LINE__, NameSize ? "named" : "wrong", (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
                      ArgSize ? " = " : "", (int) ArgSize, pArg);
 #else
             /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
