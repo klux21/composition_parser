@@ -901,12 +901,14 @@ int run_file_iteration_tests()
             if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
                NameSize = lIniGetStringValue(pName, pName, NameSize) - 1; /* -> this terminates and invalidates our source buffer */
 
-            sfprintf(stdout, "\n%4d: found block    %*s%.*s%s{ #* %zu bytes *#\n",
-                     __LINE__, (int)(Indent*3),"", (int) NameSize, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg + 2);
+            sfprintf(stdout, "\n%4d: %s block    %*s%.*s%s{ #* %zu bytes in total *#\n",
+                     __LINE__, NameSize ? "named" : "child", (int)(Indent*3),"", (int) NameSize, pName,
+                     NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg + 2);
 #else
             /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
-            _sfprintf(stdout, "\n%4d: found block    %*s%.*v%s{ #* %zu bytes *#\n",
-                      __LINE__, (int)(Indent*3),"", (int) NameSize, &pvc_unescape, pName, NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg);
+            _sfprintf(stdout, "\n%4d: %s block    %*s%.*v%s{ #* %zu bytes in total *#\n",
+                      __LINE__, NameSize ? "named" : "child", (int)(Indent*3),"", (int) NameSize, &pvc_unescape, pName,
+                      NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg);
 #endif
             ps = pArg + 1;
             ++Indent;
@@ -931,7 +933,7 @@ int run_file_iteration_tests()
             /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
             _sfprintf(stdout, "%4d: found entry    %*s%.*v%s%.*v\n",
                       __LINE__, (int)(Indent*3), "", (int) NameSize, &pvc_unescape, pName ? pName : "\"\"",
-                     ArgSize ? " = " : "", (int) ArgSize, &pvc_unescape, pArg);
+                      ArgSize ? " = " : "", (int) ArgSize, &pvc_unescape, pArg);
 #endif
          }
       }
