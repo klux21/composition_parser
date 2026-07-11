@@ -882,6 +882,13 @@ int run_file_iteration_tests()
 
    size_t Indent = 0;
 
+   size_t  blocks   = 0;
+   size_t  entries  = 0;
+   size_t  sections = 0;
+   int64_t t0 =  nsTimeStamp();
+   int64_t t1 =  nsTimeStamp();
+   size_t count  = 1001;
+
    if(!pIniData)
    {
       sfprintf(stderr, "%4d: failed to open the file '%s'! (err=%d, %s)\n", __LINE__, pIniFile, errno, strerror(errno));  
@@ -890,85 +897,119 @@ int run_file_iteration_tests()
 
    sfprintf(stdout, "%4d: file '%s' successfully opened.\n", __LINE__,  pIniFile);  
 
-   /* Let's iterate the file content */
-   while (*ps)
-   {
-      while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
-      {
-         if(ArgSize && (*pArg == '{'))
-         {
-#ifndef SFPRINTF_H
-            if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
-               NameSize = lIniGetStringValue(pName, pName, NameSize) - 1; /* -> this terminates and invalidates our source buffer */
+   t0 = nsTimeStamp();
 
-            sfprintf(stdout, "\n%4d: %s block    %*s%.*s%s{ #* %zu bytes in total *#\n",
-                     __LINE__, NameSize ? "named" : "child", (int)(Indent*3),"", (int) NameSize, pName,
-                     NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg + 2);
+   while(count--)
+   {
+       if (!count)
+          t1 =  nsTimeStamp();
+
+       ps = pIniData;;
+
+      /* Let's iterate the file content */
+      while (*ps)
+      {
+         while(bIniEntryFind(&ps, &pName, &NameSize, &pArg, &ArgSize, 0))
+         {
+            if(ArgSize && (*pArg == '{'))
+            {
+               if(!count)
+               {
+                  blocks++;
+#ifndef SFPRINTF_H
+                  if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
+                     NameSize = lIniGetStringValue(pName, pName, NameSize) - 1; /* -> this terminates and invalidates our source buffer */
+
+                  sfprintf(stdout, "\n%4d: %s block    %*s%.*s%s{ #* %zu bytes in total *#\n",
+                           __LINE__, NameSize ? "named" : "child", (int)(Indent*3),"", (int) NameSize, pName,
+                           NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg + 2);
 #else
-            /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
-            _sfprintf(stdout, "\n%4d: %s block    %*s%.*v%s{ #* %zu bytes in total *#\n",
-                      __LINE__, NameSize ? "named" : "child", (int)(Indent*3),"", (int) NameSize, &pvc_unescape, pName,
-                      NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg);
+                  /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
+                  _sfprintf(stdout, "\n%4d: %s block    %*s%.*v%s{ #* %zu bytes in total *#\n",
+                            __LINE__, NameSize ? "named" : "child", (int)(Indent*3),"", (int) NameSize, &pvc_unescape, pName,
+                            NameSize ? " = " : "", pIniFindBlockEnd (pArg + 1) - pArg);
 #endif
-            ps = pArg + 1;
-            ++Indent;
+               }
+
+               ++Indent;
+               ps = pArg + 1;
+            }
+            else
+            {
+               if(!count)
+               {
+                  entries++;
+#ifndef SFPRINTF_H
+                  /* Removing quotes or replacing escapes always shortens a string.
+                     For this we test whether the length changes before letting lIniGetStringValue terminating the string.
+                     This way we can work zero-copy and remove quotes and escapes in place. */
+
+                  if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
+                     NameSize = lIniGetStringValue(pName, pName, NameSize) - 1; /* -> this terminates and invalidates our source buffer */
+
+                  if(ArgSize != lIniGetStringValue(NULL, pArg, ArgSize) - 1)
+                     ArgSize = lIniGetStringValue(pArg, pArg, ArgSize) - 1; /* -> this terminates and invalidates our source buffer */
+
+                  sfprintf(stdout, "%4d: %s entry    %*s%.*s%s%.*s\n",
+                           __LINE__, NameSize ? "named" : "wrong", (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
+                           ArgSize ? " = " : "", (int) ArgSize, pArg);
+#else
+                  /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
+                  _sfprintf(stdout, "%4d: %s entry    %*s%.*v%s%.*v\n",
+                            __LINE__, NameSize ? "named" : "wrong", (int)(Indent*3), "", (int) NameSize, &pvc_unescape, pName ? pName : "\"\"",
+                            ArgSize ? " = " : "", (int) ArgSize, &pvc_unescape, pArg);
+#endif
+               }
+            }
+         }
+
+         if(pIniFindNextSection(&ps, &pSectionName, &SectionNameSize))
+         {
+            if(!count)
+            {
+               sections++;
+#ifndef SFPRINTF_H
+               if(SectionNameSize != lIniGetStringValue(NULL, pSectionName, SectionNameSize) - 1)
+                   SectionNameSize = lIniGetStringValue(pSectionName, pSectionName, SectionNameSize) - 1; /* -> this terminates and invalidates our source buffer */
+
+               sfprintf(stdout, "\n%4d: found section  %*s[%.*s]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, pSectionName ? pSectionName : "");
+#else
+               /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
+               _sfprintf(stdout, "\n%4d: found section  %*s[%.*v]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, &pvc_unescape, pSectionName ? pSectionName : "");
+#endif
+            }
          }
          else
          {
-#ifndef SFPRINTF_H
-            /* Removing quotes or replacing escapes always shortens a string.
-               For this we test whether the length changes before letting lIniGetStringValue terminating the string.
-               This way we can work zero-copy and remove quotes and escapes in place. */
+            if(Indent)
+            {
+               --Indent;
+               if(!count)
+                  sfprintf(stdout, "%4d:   block end    %*s%.1s\n", __LINE__, (int)(Indent*3), "", ps);
 
-            if(NameSize != lIniGetStringValue(NULL, pName, NameSize) - 1)
-               NameSize = lIniGetStringValue(pName, pName, NameSize) - 1; /* -> this terminates and invalidates our source buffer */
-
-            if(ArgSize != lIniGetStringValue(NULL, pArg, ArgSize) - 1)
-               ArgSize = lIniGetStringValue(pArg, pArg, ArgSize) - 1; /* -> this terminates and invalidates our source buffer */
-
-            sfprintf(stdout, "%4d: %s entry    %*s%.*s%s%.*s\n",
-                     __LINE__, NameSize ? "named" : "wrong", (int)(Indent*3), "", (int) NameSize, pName ? pName : "\"\"",
-                     ArgSize ? " = " : "", (int) ArgSize, pArg);
-#else
-            /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
-            _sfprintf(stdout, "%4d: %s entry    %*s%.*v%s%.*v\n",
-                      __LINE__, NameSize ? "named" : "wrong", (int)(Indent*3), "", (int) NameSize, &pvc_unescape, pName ? pName : "\"\"",
-                      ArgSize ? " = " : "", (int) ArgSize, &pvc_unescape, pArg);
-#endif
+               if(*ps != '}')
+               {
+                  if(!count)
+                      sfprintf(stdout, "%4d: unexpected char! ('%.1s' 0x%x)!\n", __LINE__, ps, (unsigned int) *ps);
+               }
+               else
+                  ++ps;
+            }
+            else if(*ps)
+            {
+               if(!count)
+                   sfprintf(stdout, "%4d: unexpected file end ('%.1s' 0x%x)!\n", __LINE__, ps, (unsigned int) *ps);
+               break;
+            }
          }
       }
+   }/* while(count--)*/
 
-      if(pIniFindNextSection(&ps, &pSectionName, &SectionNameSize))
-      {
-#ifndef SFPRINTF_H
-         if(SectionNameSize != lIniGetStringValue(NULL, pSectionName, SectionNameSize) - 1)
-            SectionNameSize = lIniGetStringValue(pSectionName, pSectionName, SectionNameSize) - 1; /* -> this terminates and invalidates our source buffer */
+   t1 -= t0;
+   t1 /= 1000;
 
-         sfprintf(stdout, "\n%4d: found section  %*s[%.*s]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, pSectionName ? pSectionName : "");
-#else
-         /* Using _sfprintf we can leave the buffer unchanged and print the the data using %v and pvc_unescape */
-         _sfprintf(stdout, "\n%4d: found section  %*s[%.*v]\n", __LINE__, (int)(Indent*3), "", (int) SectionNameSize, &pvc_unescape, pSectionName ? pSectionName : "");
-#endif
-      }
-      else
-      {
-         if(Indent)
-         {
-            --Indent;
-            sfprintf(stdout, "%4d:   block end    %*s%.1s\n", __LINE__, (int)(Indent*3), "", ps);
-
-            if(*ps != '}')
-               sfprintf(stdout, "%4d: unexpected char! ('%.1s' 0x%x)!\n", __LINE__, ps, (unsigned int) *ps);
-            else
-               ++ps;
-         }
-         else if(*ps)
-         {
-            sfprintf(stdout, "%4d: unexpected file end ('%.1s' 0x%x)!\n", __LINE__, ps, (unsigned int) *ps);
-            break;
-         }
-      }
-   }
+   sfprintf(stdout, "\n%4d: parsing of %zd bytes containing %zd sections, %zd blocks and %zd entries without any output took %lldns.\n",
+           __LINE__, strlen(pIniData), sections, blocks, entries, (long long) t1);
 
    iRet = 1;
    Exit:;
