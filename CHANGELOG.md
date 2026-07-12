@@ -1,5 +1,8 @@
 # Changelog of the Data Composition parser
 
+## composition_parser_1.1.4 / 2026-07-12
+ - object counters and time measurement for the file iteration test added 
+
 ## composition_parser_1.1.3 / 2026-07-10
  - output of file iteration test and comment of composition_test.c improved
  - unnamed entries in composition_test.ini added
