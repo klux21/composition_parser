@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>composition_parser – Zero-Copy C Parser for the Data Composition Format</title>
+
+<meta name="description" content="composition_parser is a zero-copy C parser for the Data Composition Format, a deterministic, hierarchical, untyped, whitespace-tolerant configuration and data representation format.">
+<meta name="keywords" content="composition parser, data composition format, zero-copy parser, C parser, hierarchical configuration, untyped format, structured data, RFC-style format">
+
+<meta property="og:title" content="composition_parser – Zero-Copy C Parser">
+<meta property="og:description" content="A zero-copy C parser for the Data Composition Format, a deterministic hierarchical configuration and data format.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://klux21.github.io/composition_parser/">
+<meta property="og:image" content="composition.svg">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="composition_parser – Zero-Copy C Parser">
+<meta name="twitter:description" content="A zero-copy C parser for the Data Composition Format.">
+<meta name="twitter:image" content="composition.svg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "composition_parser",
+  "description": "Zero-copy C parser for the Data Composition Format, a deterministic hierarchical configuration and data format.",
+  "applicationCategory": "DeveloperTool",
+  "operatingSystem": "Cross-platform",
+  "url": "https://github.com/klux21/composition_parser",
+  "license": "https://opensource.org/license/zlib/"
+}
+</script>
+
+<style>
+:root {
+    color-scheme: dark;
+}
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem;
+    line-height: 1.6;
+    background: #0b0c10;
+    color: #e5e9f0;
+}
+h1, h2, h3 {
+    font-weight: 600;
+    color: #eceff4;
+}
+a {
+    color: #88c0d0;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+pre {
+    background: #2e3440;
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+}
+code {
+    font-family: "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, monospace;
+}
+img {
+    display: block;
+    margin: 0 auto 1.5rem auto;
+}
+hr {
+    border: none;
+    border-top: 1px solid #3b4252;
+    margin: 2rem 0;
+}
+ul {
+    padding-left: 1.2rem;
+}
+</style>
+</head>
+
+<body>
+
+<img src="composition.svg" width="300" alt="Composition Format Logo">
+
+<h1>composition_parser</h1>
+<h2>Zero-Copy C Parser for the Data Composition Format</h2>
+
+<p>
+<strong><a href="https://github.com/klux21/composition_parser">klux21/composition_parser</a></strong> is a compact, zero-copy C parser for the 
+<strong>Data Composition Format</strong> — a deterministic, hierarchical, untyped,
+whitespace-tolerant configuration and data representation format.
+</p>
+
+<p>
+The format is defined in an independent RFC-style specification: <a href="https://github.com/klux21/composition">Data Composition Format Specification</a>
+</p>
+
+<hr>
+
+<h2>About the Data Composition Format</h2>
+
+<p>
+The <a href="https://github.com/klux21/composition">Data Composition Format</a> is designed for human-readable configuration files,
+lightweight data serialization, small text databases, and text-based protocols.
+It intentionally avoids type semantics and focuses on deterministic structure.
+</p>
+
+<p>The <a href="https://github.com/klux21/composition">Data Composition Format</a> is a very small, hierarchical, untyped, whitespace-tolerant, block-structured text format designed for human-readable configuration files, lightweight data serialization, small text databases, and text-based protocols.</p>
+
+<p>The format does not define data types. All values are strings or blocks containing Data Composition subdocuments.<br>
+ “Data Composition Format” because it’s exactly that: an untyped format that can hold any kind of data.</p>
+
+<h3>Key Properties</h3>
+
+<ul>
+    <li><strong>Untyped</strong> — values are raw tokens; interpretation is application-defined.</li>
+    <li><strong>Deterministic grammar</strong> — entries, values, blocks, sections, comments.</li>
+    <li><strong>Whitespace-tolerant</strong> — whitespace may appear between any tokens.</li>
+    <li><strong>Hierarchical</strong> — nested blocks and sections.</li>
+    <li><strong>Suitable for zero-copy parsing</strong> — the format is designed for it.</li>
+    <li><strong>Robust under human editing</strong> — forgiving syntax, stable structure.</li>
+    <li><strong>Minimal syntax</strong> — easy to parse in embedded environments.</li>
+</ul>
+
+<hr>
+
+<h2>Parser Features</h2>
+
+<ul>
+    <li><strong>Zero-copy operation</strong> — names, values, and blocks can be returned as slices of the input buffer.</li>
+    <li><strong>No dependencies</strong> — implemented in two files: <code>iniparse.c</code> and <code>iniparse.h</code>.</li>
+    <li><strong>Preserves raw content</strong> — quoted strings, escapes, and block contents remain untouched.</li>
+    <li><strong>Optional unquoting/unescaping</strong> — provided as helper functions.</li>
+    <li><strong>Optional numeric interpretation</strong> — via <a href="https://github.com/klux21/str2num">str2num</a>, not required.</li>
+    <li><strong>Section iteration</strong> — supports dotted section names and nested sections.</li>
+    <li><strong>Anonymous blocks and entries</strong> — supported according to the standard.</li>
+</ul>
+
+<hr>
+
+<h2>What the Format Makes Possible</h2>
+
+<p>
+Below is an example demonstrating mixed styles, nested blocks, 
+numeric formats, dotted sections, and comment types — all in one document.
+The Data Composition Format enables structured documents that exceed the capabilities
+of common formats such as INI, JSON, TOML, YAML, XML, and others:
+</p>
+
+<pre>
+# You can
+# - just iterate over a bunch of numbers, characters, and words like the ones below
+1 2 33 42 5 6 7 8 9 0 5 a b c d e f g h i j cat dog horse
+_____________________________________
+#* - read a bunch of entries that hold more exotic numbers like below 
+
+   (The project contains a speed test that reads all of these as int64_t or
+    double in less than a microsecond on a Raspberry Pi 5. And yes, the format
+    supports block comments like this one.) *#
+
+inttests = { ib=0b1111 io=0o1234567 id=000056789 ix=0xabcd987 }
+floattests = { fb=0b11.11e100 fo=0o1234.56e10 fd=1.2345e64 fx=0xabc.defp10 }
+_____________________________________
+# - read the points of the triangles and a rectangle for a drawing like this
+drawing = { triangle_3D = {{6 4 3}{4 5 7}{-1 17 2}}
+            triangle_3D = {{3 2 3}{7 6 2}{1 11 -2}}
+            rectangle_3D = {{6 5 6}{8 5 5}{6 15 5}{8 15 5}} }
+_____________________________________
+# - have a sectionless configuration without useless quotes and commas
+server = {
+   host = localhost
+   port = 8080
+   tls = {
+      enabled
+      certificate = /etc/certs/server.pem
+
+      ciphers = { #* comment block *#
+      accept = { TLS_AES_128_CCM_8_SHA256  TLS_CHACHA20_POLY1305_SHA256
+                 TLS_AES_128_GCM_SHA256 }
+      }
+   }
+}
+_____________________________________
+
+# - and you can also use INI-like configurations, even in the same
+#   document, with all the other content above and
+# - add sections and entries that share a name as many as you like 
+[server]
+ host = localhost
+ port = 8080
+
+[server.tls]
+ enabled
+ certificate = "/etc/certs/server.pem"
+
+[server.tls.ciphers.accept]
+ TLS_AES_128_CCM_8_SHA256
+ TLS_CHACHA20_POLY1305_SHA256
+ TLS_AES_128_GCM_SHA256
+_____________________________________
+</pre>
+
+<hr>
+
+<h2>Performance</h2>
+
+<p>
+The <strong>composition_parser</strong> is engineered for extremely high parsing performance.
+Its deterministic grammar, whitespace-tolerant tokenization, and zero-copy model allow it to
+process complex hierarchical documents with exceptional efficiency.
+</p>
+
+<h3>Microbenchmark Results</h3>
+
+<p>
+On a Raspberry Pi 5, a tree walk of the 1753 bytes of the document above requires only <strong>3.3 µs</strong> to locate:
+</p>
+
+<ul>
+    <li><strong>3 sections</strong></li>
+    <li><strong>20 blocks</strong></li>
+    <li><strong>81 entries</strong></li>
+</ul>
+
+<p>
+A stripped version of the same document (no comments, no blank lines) is parsed in
+<strong>2.5 µs</strong>. 
+</p>
+
+<h3>Large Document Benchmark</h3>
+
+<p>
+A tree walk of a converted JSON benchmark file citm_catalog.json of <strong>1673723</strong> bytes containing:
+</p>
+
+<ul>
+    <li><strong>21388 blocks</strong></li>
+    <li><strong>16390 entries</strong></li>
+</ul>
+
+<p>
+requires ≈ <strong>2032 µs</strong> without generating any output.
+This corresponds to an effective parsing throughput of about <strong>823 MB/s</strong> on a Raspberry Pi 5.
+</p>
+
+<h3>Structural Traversal</h3>
+
+<p>
+The values are the average of 1000 repetitions of a build with gcc version 14.2.0.
+The measurements represent a pure structural iteration: locating sections, blocks,
+and entries without performing any semantic processing. No unescaping, unquoting,
+numeric interpretation, or value transformation is performed during these benchmarks.
+This demonstrates the inherent efficiency of the Data Composition Format’s grammar.
+</p>
+
+<p>
+Because the format is untyped and designed for deterministic scanning, applications
+may choose between:
+</p>
+
+<ul>
+    <li><strong>pure structural traversal</strong> (as in the benchmarks)</li>
+    <li><strong>selective unescaping or unquoting</strong> only when needed</li>
+    <li><strong>optional numeric interpretation</strong> using compiler functions or external libraries</li>
+</ul>
+
+<p>
+This separation of structure and semantics allows the parser to achieve extremely high
+throughput while giving applications full control over how values are interpreted.
+</p>
+
+<h3>Benchmark Platform</h3>
+
+<p>
+All performance values were measured on a Raspberry Pi 5 and are the average of 1000 repetitions.  
+This platform is one of the few widely available and sufficiently standardized ARM systems,
+making its results reproducible and meaningful across different environments.
+Its predictable thermal behavior and stable clock frequencies allow reliable microsecond-level
+measurements without interference from dynamic frequency scaling.
+</p>
+
+<p>
+A Ryzen 3900X desktop CPU can parse the same <strong>1673723</strong> byte document in <strong>1062 µs</strong> (≈ <strong>1.06 ms</strong>).
+Of course desktop-class CPUs vary significantly in microarchitecture, memory subsystem, dynamic clock scaling (especially under Windows),
+cache hierarchy, mainboard, firmware, thermal behavior, and operating system scheduling.
+
+Because of these variations, desktop results do not provide a stable comparison baseline.
+An unmodified Raspberry Pi 5, however, offers consistent, reproducible performance characteristics.
+</p>
+
+<hr>
+
+<h2>Repository</h2>
+
+<p>
+<a href="https://github.com/klux21/composition_parser">https://github.com/klux21/composition_parser</a>
+</p>
+
+<hr>
+
+<h2>Licensing</h2>
+
+<ul>
+    <li>Parser: <strong>zlib License</strong></li>
+    <li>Test project: <strong>Civil Usage Public License</strong></li>
+    <li>Recommended numeric library <a href="https://github.com/klux21/str2num">klux21/str2num</a> : <strong>zlib License</strong></li>
+    <li>Recommended formatting library <a href="https://github.com/klux21/callback_printf">klux21/callback_printf</a> : <strong>Civil Usage Public License</strong></li>
+</ul>
+
+<hr>
+
+<h2>Summary</h2>
+
+<p>
+<strong>klux21/composition_parser</strong> is a zero-copy, untyped, hierarchical C parser for the 
+Data Composition Format — a compact, deterministic, and human-friendly configuration and
+data representation language. It is ideal for embedded systems, configuration files,
+lightweight databases, and text-based protocols.
+</p>
+
+</body>
+</html>

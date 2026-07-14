@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://klux21.github.io/composition_parser/sitemap.xml
