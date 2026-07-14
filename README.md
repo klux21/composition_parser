@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="composition.svg" width="300">
+  <img src="docs/composition.svg" width="300">
 </p>
 
 <h2>A first C parser for the tiny but mighty and very flexible Data Composition Format</h2>
