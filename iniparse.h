@@ -129,10 +129,11 @@ char * pIniFindBlockEnd (const char * pb);
 
 /* ------------------------------------------------------------------------- *\
    lIniGetStringValue converts an unterminated C style escaped string from
-   INI file buffer to it's related value. DstLen has to be at maximum as large
-   as SrcLen + 1 for a terminating '\0' character. The function returns the
-   number of written bytes. Source and Destination buffer may overlap.
-   If the destination is NULL then the required buffer size is returned only.
+   INI file buffer to it's unescaped and unqoted value. DstLen has to be at
+   maximum as large as SrcLen + 1 for a terminating '\0' character.
+   The function returns the number of written bytes.
+   Source and Destination buffer may overlap. If the destination is NULL than
+   the required buffer size is returned only.
 \* ------------------------------------------------------------------------- */
 
 size_t lIniGetStringValue(char *       pDst,    /* pointer to destination buffer */
