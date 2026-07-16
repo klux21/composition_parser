@@ -38,13 +38,6 @@
 #ifndef INIPARSE_H
 #define INIPARSE_H
 
-#ifdef _WIN32
-#include <windows.h>   /* required for HMODULE */
-#elif defined __CYGWIN__
-#include <windows.h>   /* required for HMODULE */
-#else
-
-#endif
 
 #include <stddef.h>
 
