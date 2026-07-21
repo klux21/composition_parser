@@ -572,6 +572,9 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
    pName = pd; /* begin of entry name found, remember pointer */
 
    /* find end of the name */
+   while (IS_INI_CHAR(*pd))
+      ++pd;  /* add normal characters */
+
    while(!IS_INI_SPECIAL(*pd))
    {/* find end of entry name */
       if(*pd == '\\')
@@ -593,7 +596,9 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
          }
       }
 
-      ++pd; /* add character to string */
+      while (IS_INI_CHAR(*++pd))
+      { /* add character to string */
+      }
    }
 
    NameSize = (size_t)(pd - pName); /* calculate name length */
@@ -631,6 +636,9 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
       {
          pArg = pd;
 
+         while (IS_INI_CHAR(*pd))
+            ++pd;  /* add normal characters */
+
          while(!IS_INI_SPECIAL(*pd))
          {/* find end of entries argument string */
             if(*pd == '\\')
@@ -655,7 +663,9 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
                   break; /* end of document */
             }
 
-            ++pd;
+            while (IS_INI_CHAR(*++pd))
+            {/* add character to string */
+            }
          }
 
          ArgSize = (size_t)(pd - pArg);    /* calculate length of argument string */
