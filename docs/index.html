@@ -217,7 +217,7 @@ process complex hierarchical documents with exceptional efficiency.
 <h3>Microbenchmark Results</h3>
 
 <p>
-On a Raspberry Pi 5, a tree walk of the 1753 bytes of the document above requires only <strong>3.3 µs</strong> to locate:
+On a Raspberry Pi 5, a tree walk of the 1753 bytes of the document above requires only <strong>2.8 µs</strong> to locate:
 </p>
 
 <ul>
@@ -228,7 +228,7 @@ On a Raspberry Pi 5, a tree walk of the 1753 bytes of the document above require
 
 <p>
 A stripped version of the same document (no comments, no blank lines) is parsed in
-<strong>2.5 µs</strong>. 
+<strong>1.9 µs</strong>. 
 </p>
 
 <h3>Large Document Benchmark</h3>
@@ -243,8 +243,8 @@ A tree walk of a converted JSON benchmark file citm_catalog.json of <strong>1673
 </ul>
 
 <p>
-requires ≈ <strong>2032 µs</strong> without generating any output.
-This corresponds to an effective parsing throughput of about <strong>823 MB/s</strong> on a Raspberry Pi 5.
+requires ≈ <strong>1810 µs</strong> without generating any output.
+This corresponds to an effective parsing throughput of about <strong>925 MB/s</strong> on a Raspberry Pi 5.
 </p>
 
 <h3>Structural Traversal</h3>
@@ -254,7 +254,7 @@ The values are the average of 1000 repetitions of a build with gcc version 14.2.
 The measurements represent a pure structural iteration: locating sections, blocks,
 and entries without performing any semantic processing. No unescaping, unquoting,
 numeric interpretation, or value transformation is performed during these benchmarks.
-This demonstrates the inherent efficiency of the Data Composition Format’s grammar.
+This demonstrates the inherent efficiency of the Data Composition Format's grammar.
 </p>
 
 <p>
@@ -284,7 +284,7 @@ measurements without interference from dynamic frequency scaling.
 </p>
 
 <p>
-A Ryzen 3900X desktop CPU can parse the same <strong>1673723</strong> byte document in <strong>1062 µs</strong> (≈ <strong>1.06 ms</strong>).
+A Ryzen 3900X desktop CPU can parse the same <strong>1673723</strong> byte document in <strong>1035 µs</strong> (≈ <strong>1.03 ms</strong>).
 Of course desktop-class CPUs vary significantly in microarchitecture, memory subsystem, dynamic clock scaling (especially under Windows),
 cache hierarchy, mainboard, firmware, thermal behavior, and operating system scheduling.
 
