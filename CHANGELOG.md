@@ -1,5 +1,9 @@
 # Changelog of the Data Composition parser
 
+## composition_parser_1.1.6 / 2026-07-21
+ - pIniFindSectionEnd added
+ - bugfix for possibly ignoring of block comment end
+
 ## composition_parser_1.1.5 / 2026-07-14
  - index.html, robots.txt, sitemap.xml and .nojekyll in docs directory added
  - composition.svg moved to docs directory
