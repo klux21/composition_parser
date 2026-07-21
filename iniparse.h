@@ -79,8 +79,8 @@ char * pIniFindSection(const char * pData,  /* pointer to an INI file data buffe
   pIniFindNextSection searches the next section in given INI file buffer.
   It returns a pointer to the begin of the sections data or NULL if there
   doesn't exist any section within the data.
-  The iterator ppData point to will be set to the begin of the returned
-  section or the character that stops the scan.
+  The iterator that ppData points to will be set to the begin of the
+  returned section or the character that stops the scan ('}' or '\0').
 \* ------------------------------------------------------------------------- */
 
 char * pIniFindNextSection(char **  ppData,            /* INI file data buffer */
@@ -122,18 +122,26 @@ int bIniEntryFind(char **  ppData,         /* section data pointer */
 /* ------------------------------------------------------------------------- *\
    pFindBlockEnd returns a pointer to the first character after the block
    that pb points to. pb must not point to the inner of a quoted string,
-   a comment or a header.
+   a comment or a section header.
 \* ------------------------------------------------------------------------- */
 
 char * pIniFindBlockEnd (const char * pb);
+
+/* ------------------------------------------------------------------------- *\
+   pIniFindectionEnd returns a pointer to the first character after the
+   section that pb points to. pb must not point to the inner of a quoted
+   string, a comment, or a section header.
+\* ------------------------------------------------------------------------- */
+
+char * pIniFindSectionEnd (const char * pb);
 
 /* ------------------------------------------------------------------------- *\
    lIniGetStringValue converts an unterminated C style escaped string from
    INI file buffer to it's unescaped and unqoted value. DstLen has to be at
    maximum as large as SrcLen + 1 for a terminating '\0' character.
    The function returns the number of written bytes.
-   Source and Destination buffer may overlap. If the destination is NULL than
-   the required buffer size is returned only.
+   Source and Destination buffer may overlap. If the destination pointer is
+   NULL than the required buffer size is returned only.
 \* ------------------------------------------------------------------------- */
 
 size_t lIniGetStringValue(char *       pDst,    /* pointer to destination buffer */

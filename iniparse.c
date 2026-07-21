@@ -279,9 +279,9 @@ static char * pIniFindCommentEnd(const char * pb)
       {
          if(*(++pb) == '*')
          {  /* end of comment? */
-            if(*(++pb) == s)
+            if(*(pb+1) == s)
             { /* end of comment found */
-               ++pb;
+               pb += 2;
                break;
             }
          }
@@ -321,7 +321,7 @@ static char * pSkipBlanksAndComments(const char * pb)
          goto Exit; /* end of document */
 
       while(IS_INI_BLANK(*pb)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
-        ++pb;
+         ++pb;
    }
 
    Exit:;
@@ -334,7 +334,7 @@ static char * pSkipBlanksAndComments(const char * pb)
 /* ------------------------------------------------------------------------- *\
    pFindBlockEnd returns a pointer to the first character after the block
    that pb points to. pb must not point to the inner of a quoted string,
-   a comment or a header.
+   a comment or a section header.
 \* ------------------------------------------------------------------------- */
 
 char * pIniFindBlockEnd (const char * pb)
@@ -410,14 +410,14 @@ char * pIniFindBlockEnd (const char * pb)
                   if(!*pb)
                      goto Exit; /* unexpected end of document */
                }
-           }
-           else if(!*pb)
-              goto Exit; /* unexpected end of document */
+            }
+            else if(!*pb)
+               goto Exit; /* unexpected end of document */
 
-           ++pb;
+            ++pb;
 
-           if(IS_INI_BLANK_OR_COMMENT(*pb))
-              pb = pSkipBlanksAndComments(pb);
+            if(IS_INI_BLANK_OR_COMMENT(*pb))
+               pb = pSkipBlanksAndComments(pb);
          }
       }
       else if(!*pb)
@@ -428,7 +428,109 @@ char * pIniFindBlockEnd (const char * pb)
 
    Exit:;
    return((char *) pb);
-} /* char * pIniFindBlockEnd (const char * pBlock) */
+} /* char * pIniFindBlockEnd (const char * pb) */
+
+
+
+/* ------------------------------------------------------------------------- *\
+   pIniFindectionEnd returns a pointer to the first character after the
+   section that pb points to. pb must not point to the inner of a quoted
+   string, a comment, or a section header.
+\* ------------------------------------------------------------------------- */
+
+char * pIniFindSectionEnd (const char * pb)
+{
+   size_t BlockDepth = 1;
+
+   if(!pb)
+      goto Exit;
+
+   while (1)
+   {
+      while (IS_INI_CHAR(*pb))
+         ++pb;  /* ignore normal characters */
+
+      if(IS_INI_BLANK_OR_COMMENT(*pb))
+      {
+         pb = pSkipBlanksAndComments(pb);
+         continue;
+      }
+
+      if(*pb == '\\')
+      {  /* ignore characters that are escaped except '\0' */
+         if(! *(++pb))
+            goto Exit; /* end of document */
+      }
+      else if((*pb == '\"') || (*pb == '\''))
+      {/* ignore  characters inside of quoted strings */
+         char c = *pb;
+
+         while(*(++pb) != c)
+         {
+            if(*pb == '\\')
+               ++pb;
+
+            if(!*pb)
+               goto Exit; /* end of document */
+         }
+      }
+      else if(*pb == '}')
+      {
+         if(!--BlockDepth)
+            goto Exit;
+      }
+      else if(*pb == '{')
+      {
+         ++BlockDepth;
+      }
+      else if(*pb == '[')
+      {
+         if(1 == BlockDepth)
+            goto Exit;
+
+         /* Let's skip sections headers. */
+         if(IS_INI_BLANK_OR_COMMENT(*(++pb)))
+             pb = pSkipBlanksAndComments(pb);
+
+         /* let's find the end of the section header */
+         while(*pb != ']')
+         {
+            if(*pb == '\\')
+            { /* ignore all characters that are escaped except '\0' */
+               if(!*(++pb))
+                  goto Exit; /* unexpected end of document */
+            }
+            else if((*pb == '\"') || (*pb == '\''))
+            {/* a part of the section name is quoted and must be ignored */
+               char c = *pb;
+
+               while(*(++pb) != c)
+               {
+                  if(*pb == '\\')
+                     ++pb;
+
+                  if(!*pb)
+                     goto Exit; /* unexpected end of document */
+               }
+            }
+            else if(!*pb)
+               goto Exit; /* unexpected end of document */
+
+            ++pb;
+
+            if(IS_INI_BLANK_OR_COMMENT(*pb))
+               pb = pSkipBlanksAndComments(pb);
+         }
+      }
+      else if(!*pb)
+         goto Exit; /* end of document */
+
+      ++pb;
+   }
+
+   Exit:;
+   return((char *) pb);
+} /* char * pIniFindSectionEnd (const char * pb) */
 
 
 
@@ -620,8 +722,8 @@ Exit:;
   pIniFindNextSection searches the next section in given INI file buffer.
   It returns a pointer to the begin of the sections data or NULL if there
   doesn't exist any section within the data.
-  The iterator ppData point to will be set to the begin of the returned
-  section or the character that stops the scan.
+  The iterator that ppData points to will be set to the begin of the
+  returned section or the character that stops the scan ('}' or '\0').
 \* ------------------------------------------------------------------------- */
 
 char * pIniFindNextSection(char **  ppData,           /* INI file data buffer */
@@ -636,11 +738,7 @@ char * pIniFindNextSection(char **  ppData,           /* INI file data buffer */
    if(!ppData)
       goto Exit;
 
-   pd = *ppData;
-
-   while(bIniEntryFind(&pd, NULL, NULL, NULL, NULL, 1))
-   { /* skip all INI file entries */
-   }
+   pd = pIniFindSectionEnd (*ppData);
 
    if(*pd != '[')
    {
@@ -798,10 +896,7 @@ char * pIniFindSection(const char * pData, /* INI file data buffer */
 
 Exit:;
 
-   if(pRet)
-      vPrintLog(DFL_DBG,"Found section [%s]", pName ? pName : "");
-   else
-      vPrintLog(DFL_DBG,"Section [%s] not found!", pName ? pName : "");
+   vPrintLog(DFL_DBG,"Section [%s]%s found!", pName ? pName : "", pRet ? "" : " not");
 
    return ((char *) pRet);
 }/* pIniFindSection(char * pData, char * pName) */
@@ -812,8 +907,8 @@ Exit:;
    INI file buffer to it's unescaped and unqoted value. DstLen has to be at
    maximum as large as SrcLen + 1 for a terminating '\0' character.
    The function returns the number of written bytes.
-   Source and Destination buffer may overlap. If the destination is NULL than
-   the required buffer size is returned only.
+   Source and Destination buffer may overlap. If the destination pointer is
+   NULL than the required buffer size is returned only.
 \* ------------------------------------------------------------------------- */
 
 size_t lIniGetStringValue(char *       pDst,   /* pointer to destination buffer */
@@ -1035,8 +1130,7 @@ int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
    pEntry = (INI_ENTRY *) malloc(sizeof(*pEntry) + NameSize + ArgSize + 2);
    if(!pEntry)
    {
-      vPrintLog(DFL_ERR,"Out of memory while reading infile parameter! (%s)",
-                strerror(errno));
+      vPrintLog(DFL_ERR,"Out of memory while reading infile parameter! (%s)", strerror(errno));
       goto Exit;
    }
 
