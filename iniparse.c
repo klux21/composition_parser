@@ -351,7 +351,21 @@ char * pIniFindBlockEnd (const char * pb)
 
       if(IS_INI_BLANK_OR_COMMENT(*pb))
       {
-         pb = pSkipBlanksAndComments(pb);
+         /* ignore tabs and spaces and other separating blanks */
+         while(IS_INI_BLANK(*pb)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+            ++pb;
+
+         while(IS_INI_COMMENT(*pb))
+         {
+            pb = pIniFindCommentEnd(pb);
+
+            if(!*pb)
+                goto Exit; /* end of document */
+
+            while(IS_INI_BLANK(*pb)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+               ++pb;
+         }
+
          continue;
       }
 
@@ -452,7 +466,21 @@ char * pIniFindSectionEnd (const char * pb)
 
       if(IS_INI_BLANK_OR_COMMENT(*pb))
       {
-         pb = pSkipBlanksAndComments(pb);
+         /* ignore tabs and spaces and other separating blanks */
+         while(IS_INI_BLANK(*pb)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+            ++pb;
+
+         while(IS_INI_COMMENT(*pb))
+         {
+            pb = pIniFindCommentEnd(pb);
+
+            if(!*pb)
+                goto Exit; /* end of document */
+
+            while(IS_INI_BLANK(*pb)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+               ++pb;
+         }
+
          continue;
       }
 
@@ -564,7 +592,21 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
    /* let's find begin of next entry */
    pd = *ppData;
    if(IS_INI_BLANK_OR_COMMENT(*pd))
-      pd = pSkipBlanksAndComments(pd);
+   { /* ignore tabs and spaces and other separating blanks */
+      while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+         ++pd;
+
+      while(IS_INI_COMMENT(*pd))
+      {
+         pd = pIniFindCommentEnd(pd);
+
+         if(!*pd)
+             goto Exit; /* end of document */
+
+         while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+            ++pd;
+      }
+   }
 
    if(IS_INI_SECT_END(*pd)) /* [ ] } '\0' */
       goto Exit; /* end of section found */
@@ -606,12 +648,40 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
    /* end of name, find argument */
 
    if(IS_INI_BLANK_OR_COMMENT(*pd))
-      pd = pSkipBlanksAndComments(pd);
+   {
+      while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+         ++pd;
+
+      while(IS_INI_COMMENT(*pd))
+      {
+         pd = pIniFindCommentEnd(pd);
+
+         if(!*pd)
+             break; /* end of document */
+
+         while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+            ++pd;
+      }
+   }
 
    if(*pd == '=')
    {/* argument string found */
       if(IS_INI_BLANK_OR_COMMENT(*(++pd)))
-         pd = pSkipBlanksAndComments(pd); /* skip '=' and subsequent blanks */
+      {
+         while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+            ++pd;
+
+         while(IS_INI_COMMENT(*pd))
+         {
+            pd = pIniFindCommentEnd(pd);
+
+            if(!*pd)
+               break; /* end of document */
+
+            while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+               ++pd;
+         }
+      }
 
       if (*pd == '{')
       { /* subblock found */
@@ -626,10 +696,26 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
 
             ArgSize = (size_t)(pd - pArg); /* calculate length but treat the block terminating character as part of the argument */
 
-            if(*pd)
-               pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
-            else
+            if(!*pd)
+            {
                ++ArgSize; /* add the terminating '\0' as the block termination */
+            }
+            else if(IS_INI_BLANK_OR_COMMENT(*pd))
+            {
+               while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+                  ++pd;
+
+               while(IS_INI_COMMENT(*pd))
+               {
+                  pd = pIniFindCommentEnd(pd);
+
+                  if(!*pd)
+                     break; /* end of document */
+
+                  while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+                     ++pd;
+               }
+            }
          }
       }
       else
@@ -669,7 +755,23 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
          }
 
          ArgSize = (size_t)(pd - pArg);    /* calculate length of argument string */
-         pd = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
+
+         if(IS_INI_BLANK_OR_COMMENT(*pd))
+         {
+            while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+               ++pd;
+
+            while(IS_INI_COMMENT(*pd))
+            {
+               pd = pIniFindCommentEnd(pd);
+
+               if(!*pd)
+                  break; /* end of document */
+
+               while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+                  ++pd;
+            }
+         }
       }
    }/* argument string found */
    else if ((*pd == '{') && !NameSize)
@@ -685,10 +787,26 @@ int bIniEntryFind(char **  ppData,        /* section data pointer */
 
          ArgSize = (size_t)(pd - pArg); /* calculate length but treat the block terminating character as part of the argument */
 
-         if(*pd)
-            pd  = pSkipBlanksAndComments(pd); /* skip subsequent blanks */
-         else
+         if(!*pd)
+         {
             ++ArgSize; /* add the terminating '\0' as the block termination */
+         }
+         else if(IS_INI_BLANK_OR_COMMENT(*pd))
+         {
+            while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+               ++pd;
+
+            while(IS_INI_COMMENT(*pd))
+            {
+               pd = pIniFindCommentEnd(pd);
+
+               if(!*pd)
+                  break; /* end of document */
+
+               while(IS_INI_BLANK(*pd)) /* " \t\n\f\v\r" are treated as entry separating whitespaces */
+                  ++pd;
+            }
+         }
       }
    }
 
