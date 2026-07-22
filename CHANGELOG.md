@@ -1,5 +1,8 @@
 # Changelog of the Data Composition parser
 
+## composition_parser_1.1.8 / 2026-07-22
+ - faster skipping of blanks
+
 ## composition_parser_1.1.7 / 2026-07-21
  - parsing speed of unquoted names and values improved
 
