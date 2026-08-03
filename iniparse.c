@@ -1227,8 +1227,8 @@ size_t lIniRemoveQuotes(char *       pDst,   /* pointer to destination buffer */
 /* ------------------------------------------------------------------------- *\
    bIniEntryCopy copies and unquotes an entry name and it's argument data
    into an allocated INI_ENTRY struct. The returned pointer must be released
-   using free after usage. The allocated name und argument data strings are
-   zero terminated.
+   using vIniDataFree after usage. The allocated name und argument data
+   strings are zero terminated.
 \* ------------------------------------------------------------------------- */
 
 int bIniEntryCopy(INI_ENTRY ** ppEntry,    /* pointer to storage for the allocated INI_ENTRY */
@@ -1317,7 +1317,7 @@ int bIniEntryCopy(INI_ENTRY ** ppEntry,    /* pointer to storage for the allocat
    If bUnescape is nonzero, then the entry name and its argument data
    are converted from a C like escape sequence format to binary format.
    ppData is set to the data that follows this entry withing the INI file.
-   The returned pointer must be released using free() after usage.
+   The returned pointer must be released using vIniDataFree after usage.
 \* ------------------------------------------------------------------------- */
 
 int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
@@ -1356,11 +1356,24 @@ int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
 
 
 
+/* ------------------------------------------------------------------------- *\
+   vIniDataFree frees the INI_ENTRY struct that was allocated using
+   bIniEntryCopy or bIniEntryRead or pIniFileRead. It ensures a free in
+   the sofware layer of the allocation.
+\* ------------------------------------------------------------------------- */
+
+void vIniDataFree(void * pv)
+{
+   if(pv)
+      free(pv);
+}/* void vIniDataFree(void * pv) */
+
+
 
 /* ------------------------------------------------------------------------- *\
    pIniFileRead reads the content of an INI file into an allocated buffer.
    The returned buffer is terminated by a '\0' character and must be released
-   using free() after usage.
+   using vIniDataFree after usage.
 \* ------------------------------------------------------------------------- */
 
 char * pIniFileRead(const char * pIniFileName)

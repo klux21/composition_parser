@@ -1,5 +1,8 @@
 # Changelog of the Data Composition parser
 
+## composition_parser_1.1.10 / 2026-08-03
+ - vIniDataFree added to interface
+
 ## composition_parser_1.1.9 / 2026-08-03
  - bIniEntryCopy added to interface
 

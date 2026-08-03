@@ -61,7 +61,7 @@ struct INI_ENTRY_S
 /* ------------------------------------------------------------------------- *\
    pIniFileRead reads the content of an INI file into an allocated buffer.
    The returned buffer is terminated by a '\0' character and must be released
-   using free() after usage.
+   using vIniDataFree after usage.
 \* ------------------------------------------------------------------------- */
 
 char * pIniFileRead(const char * IniFileName);
@@ -97,7 +97,7 @@ char * pIniFindNextSection(char **  ppData,            /* INI file data buffer *
    If bUnescape is nonzero, then the entry name and its argument data
    are converted from a C like escape sequence format to binary format.
    ppData is set to the data that follows this entry withing the INI file.
-   The returned pointer must be released using free() after usage.
+   The returned pointer must be released using vIniDataFree after usage.
 \* ------------------------------------------------------------------------- */
 
 int bIniEntryRead(char **      ppData,     /* pointer to INI file data */
@@ -123,8 +123,8 @@ int bIniEntryFind(char **  ppData,         /* section data pointer */
 /* ------------------------------------------------------------------------- *\
    bIniEntryCopy copies and unquotes an entry name and it's argument data
    into an allocated INI_ENTRY struct. The returned pointer must be released
-   using free after usage. The allocated name und argument data strings are
-   zero terminated.
+   using vIniDataFree after usage. The allocated name und argument data
+   strings are zero terminated.
 \* ------------------------------------------------------------------------- */
 
 int bIniEntryCopy(INI_ENTRY ** ppEntry,    /* pointer to storage for the allocated INI_ENTRY */
@@ -133,6 +133,14 @@ int bIniEntryCopy(INI_ENTRY ** ppEntry,    /* pointer to storage for the allocat
                   const char * pArg,       /* pointer to the entries parameter string */
                   size_t       ArgSize,    /* length of parameter string */
                   int          bUnescape); /* whether to find the end of a block or just the begin */
+
+/* ------------------------------------------------------------------------- *\
+   vIniDataFree frees the that was allocated using bIniEntryCopy,
+   bIniEntryRead or pIniFileRead.
+   It ensures a free at the sofware layer of the allocation.
+\* ------------------------------------------------------------------------- */
+
+void vIniDataFree(void * pv);
 
 /* ------------------------------------------------------------------------- *\
    pFindBlockEnd returns a pointer to the first character after the block
