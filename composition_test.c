@@ -536,7 +536,7 @@ int run_string_copy_tests()
             sfprintf(stdout, "%4d: string_copy: found    '%.*s = %.*s' (%lld)\n", __LINE__,
                      (int) pEntry2->NameSize, pEntry2->pName, (int) pEntry2->ArgSize, pEntry2->pArg,
                      (long long) str2i64_r(pEntry2->pArg, &pe, 1, &err));
-            free(pEntry2);
+            vIniDataFree(pEntry2);
          }
       }
       else if(!strmemcmp("floattests", pEntry->pName, pEntry->NameSize))
@@ -557,7 +557,7 @@ int run_string_copy_tests()
             found(sub_entries, 1);
             sfprintf(stdout, "%4d: string_copy: found    '%.*s = %.*s' (%e)\n", __LINE__, 
                      (int) pEntry2->NameSize, pEntry2->pName, (int) pEntry2->ArgSize, pEntry2->pArg, str2d_r(pEntry2->pArg, &pe, 1, &err));
-            free(pEntry2);
+            vIniDataFree(pEntry2);
          }
       }
       else
@@ -567,7 +567,7 @@ int run_string_copy_tests()
          goto Exit;
       }
 
-      free(pEntry);
+      vIniDataFree(pEntry);
    }
 
    sfprintf(stdout, "\n%4d: basic string_copy tests succedeed, testing performance ...\n",  __LINE__);
@@ -593,7 +593,7 @@ int run_string_copy_tests()
             while(bIniEntryRead(&pa, &pEntry2, 0 /* bUnescape */))
             {
                ++i64;
-               free(pEntry2);
+               vIniDataFree(pEntry2);
             }
          }
          else if(!strmemcmp("floattests", pEntry->pName, pEntry->NameSize))
@@ -602,7 +602,7 @@ int run_string_copy_tests()
             while(bIniEntryRead(&pa, &pEntry2, 0 /* bUnescape */))
             {
                ++i64;
-               free(pEntry2);
+               vIniDataFree(pEntry2);
             }
          }
          else
@@ -612,7 +612,7 @@ int run_string_copy_tests()
             goto Exit;
          }
 
-         free(pEntry);
+         vIniDataFree(pEntry);
       }
    }
    t1 = nsTimeStamp();
@@ -649,7 +649,7 @@ int run_string_copy_tests()
                            (int) (pe - pEntry2->pArg), pEntry2->pArg, (long long)i64, err, strerror(err));
                   goto Exit;
                }
-               free(pEntry2);
+               vIniDataFree(pEntry2);
             }
          }
          else if(!strmemcmp("floattests", pEntry->pName, pEntry->NameSize))
@@ -665,7 +665,7 @@ int run_string_copy_tests()
                            (int) (pe - pEntry2->pArg), pEntry2->pArg, db, err, strerror(err));
                   goto Exit;
                }
-               free(pEntry2);
+               vIniDataFree(pEntry2);
             }
          }
          else
@@ -675,7 +675,7 @@ int run_string_copy_tests()
             goto Exit;
          }
 
-         free(pEntry);
+         vIniDataFree(pEntry);
       }
    }
 
@@ -1015,7 +1015,7 @@ int run_file_iteration_tests()
    Exit:;
 
    if(pIniData)
-      free(pIniData);
+      vIniDataFree(pIniData);
 
    sfprintf(stdout, "%4d: file iteration test %s!\n\n", __LINE__, iRet ? "succeeded" : "failed");
 
