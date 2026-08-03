@@ -1225,35 +1225,23 @@ size_t lIniRemoveQuotes(char *       pDst,   /* pointer to destination buffer */
 
 
 /* ------------------------------------------------------------------------- *\
-   bIniEntryRead reads the next entry within an INI file section. It returns
-   a pointer to an allocated PINI_ENTRY structure that contains the data of
-   the first found entry. It fails, if no entry could be found before begin
-   of the next section, if a terminating '\0' character was found or if the
-   allocation of the return buffer has failed.
-   If bUnescape is nonzero, then the entry name and its argument data
-   are converted from a C like escape sequence format to binary format.
-   ppData is set to the data that follows this entry withing the INI file.
-   The returned pointer must be released using free() after usage.
+   bIniEntryCopy copies and unquotes an entry name and it's argument data
+   into an allocated INI_ENTRY struct. The returned pointer must be released
+   using free after usage. The allocated name und argument data strings are
+   zero terminated.
 \* ------------------------------------------------------------------------- */
 
-int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
-                  INI_ENTRY ** ppEntry,   /* storage for the allocated pointer */
-                  int          bUnescape) /* wether or not replace C style format escapes */
+int bIniEntryCopy(INI_ENTRY ** ppEntry,    /* pointer to storage for the allocated INI_ENTRY */
+                  const char * pName,      /* pointer to entry name */
+                  size_t       NameSize,   /* will be set to the length of the name */
+                  const char * pArg,       /* pointer to the entries parameter string */
+                  size_t       ArgSize,    /* length of parameter string */
+                  int          bUnescape)  /* whether to find the end of a block or just the begin */
 {
-   INI_ENTRY * pEntry   = NULL;
-   char *      pd       = NULL;
-   char *      pName    = NULL;
-   size_t      NameSize = 0;
-   char *      pArg     = NULL;
-   size_t      ArgSize  = 0;
+   INI_ENTRY * pEntry = NULL;
 
-   if(!ppData || !*ppData || !ppEntry) /* parameter check */
-      goto Exit;
-
-   pd = *ppData;
-
-   if(!bIniEntryFind(&pd, &pName, &NameSize, &pArg, &ArgSize, 1))
-      goto Exit;  /* nothing left to be read */
+   if(!ppEntry)
+       goto Exit;
 
    pEntry = (INI_ENTRY *) malloc(sizeof(*pEntry) + NameSize + ArgSize + 2);
    if(!pEntry)
@@ -1271,7 +1259,11 @@ int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
    {
       pEntry->NameSize = lIniGetStringValue(pEntry->pName, pName, NameSize) - 1; /* ignore the terminating '/0' in returned size */
 
-      if((ArgSize) && (*pArg == '{'))
+      if(!ArgSize)
+      {
+         *pEntry->pArg = '\0';
+      }
+      else if (*pArg == '{')
       { /* keep unchanged content of subblock */
          ArgSize -= 2;
 
@@ -1288,7 +1280,11 @@ int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
    {/* Let's simply copy the data from the INI file */
       pEntry->NameSize = lIniRemoveQuotes(pEntry->pName, pName, NameSize) - 1; /* ignore the terminating '/0' in returned size */
 
-      if((ArgSize) && (*pArg == '{'))
+      if(!ArgSize)
+      {
+         *pEntry->pArg = '\0';
+      }
+      else if(*pArg == '{')
       { /* keep unchanged content of subblock */
          ArgSize -= 2;
 
@@ -1302,13 +1298,62 @@ int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
       }
    }
 
-   *ppData  = pd;
    *ppEntry = pEntry;
 
    Exit:;
 
    return (pEntry != NULL);
+}/* int  bIniEntryCopy(INI_ENTRY ** ppEntry, const char * pName, size_t NameSize, const char * pArg, size_t ArgSize, int bUnescape) */
+
+
+
+/* ------------------------------------------------------------------------- *\
+   bIniEntryRead reads the next entry within an INI file section. It returns
+   a pointer to an allocated PINI_ENTRY structure that contains the data of
+   the first found entry. It fails, if no entry could be found before begin
+   of the next section, if a terminating '\0' character was found or if the
+   allocation of the return buffer has failed.
+   The allocated name und argument data strings are zero terminated.
+   If bUnescape is nonzero, then the entry name and its argument data
+   are converted from a C like escape sequence format to binary format.
+   ppData is set to the data that follows this entry withing the INI file.
+   The returned pointer must be released using free() after usage.
+\* ------------------------------------------------------------------------- */
+
+int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
+                  INI_ENTRY ** ppEntry,   /* storage for the allocated pointer */
+                  int          bUnescape) /* wether or not replace C style format escapes */
+{
+   int    bRet     = 0;
+   char * pName    = NULL;
+   size_t NameSize = 0;
+   char * pArg     = NULL;
+   size_t ArgSize  = 0;
+   char * pd       = NULL;
+
+   if(!ppData || !*ppData || !ppEntry) /* parameter check */
+      goto Exit;
+
+   pd = *ppData;
+
+   if(bIniEntryFind(&pd, &pName, &NameSize, &pArg, &ArgSize, 1))
+   {
+      if(bIniEntryCopy(ppEntry,    /* pointer to storage for the allocated INI_ENTRY */
+                       pName,      /* pointer to entry name */
+                       NameSize,   /* will be set to the length of the name */
+                       pArg,       /* pointer to the entries parameter string */
+                       ArgSize,    /* length of parameter string */
+                       bUnescape)) /* whether to find the end of a block or just the begin */
+      {
+         *ppData = pd;
+         bRet    = 1;
+      }
+   }
+
+   Exit:;
+   return (bRet);
 }/* int bIniEntryRead(char ** ppData, INI_ENTRY ** ppEntry, int bUnescape) */
+
 
 
 

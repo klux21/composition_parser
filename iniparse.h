@@ -88,14 +88,15 @@ char * pIniFindNextSection(char **  ppData,            /* INI file data buffer *
                            size_t * pSectionNameSize); /* pointer to section name length */
 
 /* ------------------------------------------------------------------------- *\
-   bIniEntryRead reads the next entry within an INI file section and returns
-   in success case an pointer to an allocated PINI_ENTRY structure
-   containing the data of an found entry. It fails, if no entry can be found
-   before begin of the next section or if a terminating '\0' character was
-   found or if the allocation of the returned data buffer has failed.
-   If bUnescape is nonzero then the name and the arguments are converted
-   from a C like escape sequence format to binary format.
-   ppData becomes set to the data following the entry within the INI file.
+   bIniEntryRead reads the next entry within an INI file section. It returns
+   a pointer to an allocated PINI_ENTRY structure that contains the data of
+   the first found entry. It fails, if no entry could be found before begin
+   of the next section, if a terminating '\0' character was found or if the
+   allocation of the return buffer has failed.
+   The allocated name und argument data strings are zero terminated.
+   If bUnescape is nonzero, then the entry name and its argument data
+   are converted from a C like escape sequence format to binary format.
+   ppData is set to the data that follows this entry withing the INI file.
    The returned pointer must be released using free() after usage.
 \* ------------------------------------------------------------------------- */
 
@@ -118,6 +119,20 @@ int bIniEntryFind(char **  ppData,         /* section data pointer */
                   char **  ppArg,          /* pointer to the entries parameter string */
                   size_t * pArgSize,       /* length of parameter string */
                   int      bFindBlockEnd); /* whether to find the end of a block or just the begin */
+
+/* ------------------------------------------------------------------------- *\
+   bIniEntryCopy copies and unquotes an entry name and it's argument data
+   into an allocated INI_ENTRY struct. The returned pointer must be released
+   using free after usage. The allocated name und argument data strings are
+   zero terminated.
+\* ------------------------------------------------------------------------- */
+
+int bIniEntryCopy(INI_ENTRY ** ppEntry,    /* pointer to storage for the allocated INI_ENTRY */
+                  const char * pName,      /* pointer to entry name */
+                  size_t       NameSize,   /* will be set to the length of the name */
+                  const char * pArg,       /* pointer to the entries parameter string */
+                  size_t       ArgSize,    /* length of parameter string */
+                  int          bUnescape); /* whether to find the end of a block or just the begin */
 
 /* ------------------------------------------------------------------------- *\
    pFindBlockEnd returns a pointer to the first character after the block
