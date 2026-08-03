@@ -135,7 +135,7 @@ int bIniEntryCopy(INI_ENTRY ** ppEntry,    /* pointer to storage for the allocat
                   int          bUnescape); /* whether to find the end of a block or just the begin */
 
 /* ------------------------------------------------------------------------- *\
-   vIniDataFree frees the that was allocated using bIniEntryCopy,
+   vIniDataFree frees the data that was allocated using bIniEntryCopy,
    bIniEntryRead or pIniFileRead.
    It ensures a free at the sofware layer of the allocation.
 \* ------------------------------------------------------------------------- */

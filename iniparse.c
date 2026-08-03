@@ -1357,9 +1357,9 @@ int bIniEntryRead(char **      ppData,    /* pointer to INI file data */
 
 
 /* ------------------------------------------------------------------------- *\
-   vIniDataFree frees the INI_ENTRY struct that was allocated using
-   bIniEntryCopy or bIniEntryRead or pIniFileRead. It ensures a free in
-   the sofware layer of the allocation.
+   vIniDataFree frees the data that was allocated using bIniEntryCopy,
+   bIniEntryRead or pIniFileRead.
+   It ensures a free at the sofware layer of the allocation.
 \* ------------------------------------------------------------------------- */
 
 void vIniDataFree(void * pv)
