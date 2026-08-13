@@ -113,23 +113,23 @@ For platform independ fprintf format string the following project is used
 
  project https://github.com/klux21/callback_printf
 
-You can execute run_test.sh for running the tests in Unix compatible operating systems.
-For Microsoft Visual C++ there exist a Visual Studio project in the VS2010 directory.
+The script run_test.sh compiles and executes the tests in Unix compatible systems.
+For Microsoft Windows there exist a Visual Studio project in the VS2010 directory.
 klux21/str2num and klux21/callback_printf are expected in parallel directories.
 
 The little test project `composition_test.c` contains several usage samples.
 It uses "Civil Usage Public License" as klux21/callback_printf does.
-Of course parser uses the very lenient zlib license as klux21/str2num does.
+The parser uses the very lenient zlib license as klux21/str2num does.
 
-The code of the parser is quite new but already works like a charm in all of my tests.
+The code of the parser is quite new as the format but already works like a charm in all of my tests.
 However, it may change quite a bit in future if the requirements and the number of features grow.
 
-The file reading test in composition_test.c iterates the content of the file `composition_test.ini` only
-and prints the found elements and their types to stdout. It's easy to adjust the content of that
-configuration file to check what's possible or causes errors.
+The file reading test in composition_test.c iterates the content of the file `composition_test.ini`
+and prints the found elements and their types to stdout. It's easy to adjust that content to check
+what's possible and what causes errors.
 
 The parser itself consists of the C header `iniparse.h` and the C file `iniparse.c` only.
 Both have no dependencies to other libraries and are easy to integrate in all kind of C or C++
-projects for platform-independent reading of configuration files.
+projects for a platform-independent reading of configuration files.
 'iniparse' because the data composition format was initially intended as a small enhancement of an
 existing INI file parser but is a little bit more than that now.
