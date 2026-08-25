@@ -16,6 +16,8 @@ https://github.com/Edditoria/markdown-plus-plus/blob/master/LICENSE.txt
 Adjustments for Data Composition Format according to the same license conditions:
 Copyright (c) Dipl.-Ing. Klaus lux (Aachen, Germany).
 Origin: https://github.com/klux21/composition_parser
+
+Installation: This file must be copied to %APPDATA%\Notepad++\userDefineLangs\
 //-->
 <NotepadPlus>
     <UserLang name="Data Composition Format" ext="cof ini cfg" udlVersion="2.1">
