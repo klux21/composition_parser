@@ -2,23 +2,22 @@
   <img src="docs/composition.svg" width="300">
 </p>
 
-<h2>A C parser for the tiny but mighty and flexible Data Composition Format</h2>
+<h2>A C parser for the tiny but mighty and very flexible Data Composition Format</h2>
 
 
 This C project is the first implementation of a data composition format parser for parsing
-standard-conforming configurations and communication data. A data composition parser can
-read most INI files as well but the format itself is hierarchical and a much more flexible
-and powerful thing than INI. Beside of that there exist a specification of that format which
-is neither limited to C nor this implementation that is relying on that of course.
-The related standard draft of the format specification can be found at
+configuration files and communication data. A data composition parser can read most INI
+files as well but the format itself is hierarchical and a much more flexible
+and powerful thing than INI. There exist a specification of that format which
+is neither limited to C nor this implementation. The standard draft of the format
+specification can be found at
 
 https://github.com/klux21/composition
 
-This implementation provides a first C parser for data and configuration files that are
-relying on that format.
+This implementation provides an initial first C parser for data and configuration files
+of that format.
 
-Structured data compositions have a very minimal syntax; a document consists of three
-types of elements:
+Data compositions have a very minimal syntax. A document has of three types of elements:
 
   - Entries which consist of a name string that can be followed by an equality sign
     and an argument value.
@@ -67,7 +66,7 @@ tls = {
 
 ```
 That looks a little bit like INI except that there is that tls block that contains
-a composition of entries which look more or less like an INI file as well.
+a composition of entries which look more or less like another INI file as well.
 However, there is a little bit more. 
 
 The support of sections within compositions ensures compatibility with most existing INI
@@ -96,8 +95,8 @@ server = {
 ```
 
 That doesn't match XML, JSON, INI or TOML but is a very lightweight, powerful and well structured
-configuration format. However, in case of more complex configurations sections may help to improve
-the readability.
+configuration format. However, in case of more complex configurations sections may help to
+improve the readability.
 
 For a platform independent parsing of numbers and ensuring the support the binary and octal
 prefixes 0b and 0o for integers and doubles the tests are using the free open source project
@@ -113,7 +112,7 @@ For platform independ fprintf format string the following project is used
 
  project https://github.com/klux21/callback_printf
 
-The script run_test.sh compiles and executes the tests in Unix compatible systems.
+The script run_test.sh builds and executes the tests in Unix compatible systems.
 For Microsoft Windows there exist a Visual Studio project in the VS2010 directory.
 klux21/str2num and klux21/callback_printf are expected in parallel directories.
 
@@ -121,14 +120,16 @@ The little test project `composition_test.c` contains several usage samples.
 It uses "Civil Usage Public License" as klux21/callback_printf does.
 The parser uses the very lenient zlib license as klux21/str2num does.
 
-The code of the parser is quite new as the format but already works like a charm in all of my tests.
-However, it may change quite a bit in future if the requirements and the number of features grow.
+The code of the parser is quite new as the format is. Of course the parser already
+works like a charm in all of my tests. However, it may change a bit if the requirements
+and the number of features grow.
 
 The file reading test in composition_test.c iterates the content of the file `composition_test.ini`
-and prints the found elements and their types to stdout. It's easy to adjust that content to check
-what's possible and what causes errors.
+and prints the found elements and their types to stdout. It's easy to adjust the content of that file
+for playing with that format to see what's possible or what causes errors and how fast it is.
 
 The parser itself consists of the C header `iniparse.h` and the C file `iniparse.c` only.
+
 Both have no dependencies to other libraries and are easy to integrate in all kind of C or C++
 projects for a platform-independent reading of configuration files.
 'iniparse' because the data composition format was initially intended as a small enhancement of an
